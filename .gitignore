@@ -1,0 +1,9 @@
+# The rules below are sorted alphabetically.
+
+.*
+arch/*/build/
+arch/*/torus.img
+
+!.editorconfig
+!.gitattributes
+!.gitignore
