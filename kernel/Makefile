@@ -7,27 +7,38 @@ $(error DR_CFLAGS undefined)
 endif
 
 KERNEL_BUILD_DIR := $(BUILD_DIR)/kernel
-ARCH_KERNEL_BUILD_DIR = $(BUILD_DIR)/arch/$(ARCH)/kernel
+ARCH_KERNEL_BUILD_DIR := $(BUILD_DIR)/arch/$(ARCH)/kernel
 
 OBJS = \
-	$(KERNEL_BUILD_DIR)/main.o \
-	$(ARCH_KERNEL_BUILD_DIR)/entry.o
-
-DEPS := $(OBJS:.o=.d)
--include $(DEPS)
-
-CFLAGS = -m64 -ffreestanding -fno-pic -fno-pie -nostdlib -nostartfiles \
-	-Wall -Wextra -Werror -I$(TOPDIR)/include -I/usr/include -std=gnu11 \
-	$(DR_CFLAGS) -MMD -MP
-ASFLAGS = -m64 -ffreestanding -I$(TOPDIR)/include $(DR_CFLAGS) -MMD -MP
+	$(KERNEL_BUILD_DIR)/main.o
 
 ifeq ($(ARCH),x86)
-CFLAGS += -mno-red-zone
+ARCH_OBJS = \
+	$(ARCH_KERNEL_BUILD_DIR)/head_s.o \
+	$(ARCH_KERNEL_BUILD_DIR)/head.o \
+	$(ARCH_KERNEL_BUILD_DIR)/idt.o \
+	$(ARCH_KERNEL_BUILD_DIR)/isr.o \
+	$(ARCH_KERNEL_BUILD_DIR)/isr_stubs.o
+endif
+
+ALL_OBJS = $(OBJS) $(ARCH_OBJS)
+
+DEPS := $(ALL_OBJS:.o=.d)
+-include $(DEPS)
+
+CFLAGS = -m64 -ffreestanding -fno-pic -fno-pie -nostdlib -Wall -Wextra -Werror \
+	-I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
+ARCH_CFLAGS = $(CFLAGS) -I$(ARCH_DIR)/include
+ARCH_ASFLAGS = -m64 -ffreestanding -I$(TOPDIR)/include -I$(ARCH_DIR)/include \
+	$(DR_CFLAGS) -MMD -MP
+
+ifeq ($(ARCH),x86)
+CFLAGS += -mno-red-zone -mgeneral-regs-only
 endif
 
 all: $(BUILD_DIR)/kernel.bin
 
-$(BUILD_DIR)/kernel.elf: $(OBJS)
+$(BUILD_DIR)/kernel.elf: $(ALL_OBJS)
 	@mkdir -p $(dir $@)
 	$(call pretty_build,LD,$@)
 	@$(LD) -m elf_x86_64 -z noexecstack -T linker.ld $^ -o $@
@@ -44,11 +55,11 @@ $(KERNEL_BUILD_DIR)/%.o: %.c
 $(ARCH_KERNEL_BUILD_DIR)/%.o: $(ARCH_DIR)/kernel/%.c
 	@mkdir -p $(dir $@)
 	$(call pretty_build,CC,$@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(ARCH_CFLAGS) -c $< -o $@
 
 $(ARCH_KERNEL_BUILD_DIR)/%.o: $(ARCH_DIR)/kernel/%.S
 	@mkdir -p $(dir $@)
 	$(call pretty_build,AS,$@)
-	@$(CC) $(ASFLAGS) -c $< -o $@
+	@$(CC) $(ARCH_ASFLAGS) -c $< -o $@
 
 .PHONY: all

@@ -30,8 +30,8 @@ Minimum supported tool versions have not yet been determined. Using a reasonably
 Clone the repo and run `make config`. After you have configured the build system, simply run `make`.
 
 ```sh
-git clone https://github.com/prbmic19/oxell-torus
-cd oxell-torus
+git clone https://github.com/prbmic19/torus
+cd torus
 make config
 make
 ```

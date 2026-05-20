@@ -20,14 +20,10 @@ DEPS := $(OBJS:.o=.d)
 
 # Pass our kernel command line here for now.
 CFLAGS = -m32 -ffreestanding -fno-pic -fno-pie -fno-stack-protector \
-	-nostdlib -nostartfiles -Wall -Wextra -Werror -I$(TOPDIR)/include \
-	-I$(ARCH_DIR)/include -I/usr/include -std=gnu11 $(DR_CFLAGS) -MMD -MP \
-	-DKERNEL_CMDLINE="\"$(KERNEL_CMDLINE)\""
+	-nostdlib -Wall -Wextra -Werror -I$(TOPDIR)/include -I$(ARCH_DIR)/include \
+	-std=gnu11 $(DR_CFLAGS) -MMD -MP -DKERNEL_CMDLINE="\"$(KERNEL_CMDLINE)\"" \
+	-mno-red-zone -mgeneral-regs-only
 ASFLAGS = -m32 -ffreestanding -I$(TOPDIR)/include -MMD -MP
-
-ifeq ($(ARCH),x86)
-CFLAGS += -mno-red-zone
-endif
 
 all: $(BUILD_DIR)/boot.bin $(BUILD_DIR)/stage2.bin
 

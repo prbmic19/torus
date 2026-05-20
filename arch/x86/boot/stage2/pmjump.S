@@ -10,8 +10,8 @@
 
 FUNC_BEGIN(enter_protected_mode)
     cli
-    lgdt   gdtr
-    lidt   null_idtr /* Be careful */
+    lgdt   gdt_ptr
+    lidt   null_idt_ptr /* Be careful. */
     
     mov    eax, cr0
     or     eax, 1 << 0
@@ -74,13 +74,13 @@ OBJ_END(gdt)
 
 SYM_BEGIN_LOCAL_U(gdt_end)
 
-OBJ_BEGIN_LOCAL(gdtr)
+OBJ_BEGIN_LOCAL(gdt_ptr)
     .word gdt_end - gdt - 1
     .long gdt
     .long 0     /* Workaround */
-OBJ_END(gdtr)
+OBJ_END(gdt_ptr)
 
-OBJ_BEGIN_LOCAL(null_idtr)
+OBJ_BEGIN_LOCAL(null_idt_ptr)
     .word 0
     .quad 0
-OBJ_END(null_idtr)
+OBJ_END(null_idt_ptr)

@@ -16,7 +16,7 @@ usize kernel_size = 0u;
 
 extern __noreturn void prepare_kernel_jump(void);
 
-static void *_pm_memcpy(void *restrict dest, const void *restrict src, usize n)
+static void *pm_memcpy(void *restrict dest, const void *restrict src, usize n)
 {
     u8 *restrict d = (u8 *restrict)dest;
     const u8 *restrict s = (const u8 *restrict)src;
@@ -44,7 +44,7 @@ static void page_tables_init(void)
 
 static void relocate_kernel(void)
 {
-    _pm_memcpy(KERNEL_DEST, KERNEL_SRC, kernel_size);
+    pm_memcpy(KERNEL_DEST, KERNEL_SRC, kernel_size);
 }
 
 __noreturn void pm_main(void)

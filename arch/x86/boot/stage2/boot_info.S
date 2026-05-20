@@ -410,7 +410,6 @@ OBJ_BEGIN_LOCAL(err_no_long)
     .asciz "Processor does not support long mode.\r\n"
 OBJ_END(err_no_long)
 
-/* Resides in BSS. */
 .section .bss, "aw", @nobits
 
 /* We'll reuse this later, so it's global. */

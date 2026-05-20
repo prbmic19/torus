@@ -6,7 +6,6 @@
 #define __noreturn      __attribute__((__noreturn__))
 #define __aligned(_a)   __attribute__((__aligned__(_a)))
 #define __aligned_max   __attribute__((__aligned__))
-#define __page_aligned  __aligned(0x1000)
 #define __packed        __attribute__((__packed__))
 #define __used          __attribute__((__used__))
 #define __section(_s)   __attribute__((__section__(_s)))

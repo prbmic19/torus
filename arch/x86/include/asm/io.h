@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef ARCH_X86_IO_H
-#define ARCH_X86_IO_H
+#ifndef X86_ASM_IO_H
+#define X86_ASM_IO_H
 
 #include <torus/types.h>
 #include <torus/compiler.h>
@@ -39,7 +39,7 @@ __always_inline u32 inl(u16 port)
 
 __always_inline void outl(u16 port, u32 data)
 {
-    asm volatile ("outl %0, %1" : : "a"(data), "Nd"(port)");
+    asm volatile ("outl %0, %1" : : "a"(data), "Nd"(port));
 }
 
-#endif // ARCH_X86_IO_H
+#endif // X86_ASM_IO_H

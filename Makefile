@@ -112,7 +112,5 @@ help:
 	@echo "  listarch    - List all supported architectures."
 	@echo "  config      - Update build config."
 	@echo "  showconfig  - Display current build config."
-	@echo ""
-	@echo "Run 'make' or 'make all' to build all targets marked with '*'."
 
 .PHONY: all boot kernel image run clean purge listarch config showconfig

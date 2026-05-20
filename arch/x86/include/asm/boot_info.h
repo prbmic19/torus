@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef ARCH_X86_BOOT_INFO_H
-#define ARCH_X86_BOOT_INFO_H
+#ifndef X86_ASM_BOOT_INFO_H
+#define X86_ASM_BOOT_INFO_H
 
 #include <torus/compiler.h>
 #include <torus/types.h>
@@ -33,4 +33,4 @@ struct boot_info
     struct e820_entry e820_entries[MAX_E820_ENTRIES];
 } __packed;
 
-#endif // ARCH_X86_BOOT_INFO_H
+#endif // X86_ASM_BOOT_INFO_H
