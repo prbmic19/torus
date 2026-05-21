@@ -42,67 +42,95 @@
     pop    rdi
 .endm
 
-.macro ISR_NOERRCODE int_no
-FUNC_BEGIN(isr\int_no)
-    cli
+.macro EXCEPTION_NOERRCODE except_no
+FUNC_BEGIN(exception\except_no)
     push   0
-    push   \int_no
-    jmp    isr_common_stub
-FUNC_END(isr\int_no)
+    push   \except_no
+    jmp    exception_common_stub
+FUNC_END(exception\except_no)
 .endm
 
-.macro ISR_ERRCODE int_no
-FUNC_BEGIN(isr\int_no)
-    cli
-    push   \int_no
-    jmp    isr_common_stub
-FUNC_END(isr\int_no)
+.macro EXCEPTION_ERRCODE except_no
+FUNC_BEGIN(exception\except_no)
+    push   \except_no
+    jmp    exception_common_stub
+FUNC_END(exception\except_no)
 .endm
 
-FUNC_BEGIN(isr_common_stub)
-    PUSH_REGS    
+.macro IRQ irq_no
+FUNC_BEGIN(irq\irq_no)
+    push   0
+    push   \irq_no
+    jmp    irq_common_stub
+FUNC_END(irq\irq_no)
+.endm
 
-    /* 
-     * Setup arguments for ISR handler.
-     * RDI = pointer to a struct regs
-     */
+FUNC_BEGIN(exception_common_stub)
+    PUSH_REGS
     mov    rdi, rsp
-    call   isr_handler
-
+    call   exception_main_handler
     POP_REGS
     add    rsp, 16
     iretq
-FUNC_END(isr_common_stub)
+FUNC_END(exception_common_stub)
 
-ISR_NOERRCODE 0
-ISR_NOERRCODE 1
-ISR_NOERRCODE 2
-ISR_NOERRCODE 3
-ISR_NOERRCODE 4
-ISR_NOERRCODE 5
-ISR_NOERRCODE 6
-ISR_NOERRCODE 7
-ISR_ERRCODE   8
-ISR_NOERRCODE 9
-ISR_ERRCODE   10
-ISR_ERRCODE   11
-ISR_ERRCODE   12
-ISR_ERRCODE   13
-ISR_ERRCODE   14
-ISR_NOERRCODE 15
-ISR_NOERRCODE 16
-ISR_NOERRCODE 17
-ISR_NOERRCODE 18
-ISR_NOERRCODE 19
-ISR_NOERRCODE 20
-ISR_NOERRCODE 21
-ISR_NOERRCODE 22
-ISR_NOERRCODE 23
-ISR_NOERRCODE 24
-ISR_NOERRCODE 25
-ISR_NOERRCODE 26
-ISR_NOERRCODE 27
-ISR_NOERRCODE 28
-ISR_NOERRCODE 29
-ISR_NOERRCODE 30
-ISR_NOERRCODE 31
+FUNC_BEGIN(irq_common_stub)
+    PUSH_REGS
+    mov    rdi, rsp
+    call   irq_main_handler
+    POP_REGS
+    add    rsp, 16
+    iretq
+FUNC_END(irq_common_stub)
+
+/* CPU exceptions. */
+EXCEPTION_NOERRCODE 0
+EXCEPTION_NOERRCODE 1
+EXCEPTION_NOERRCODE 2
+EXCEPTION_NOERRCODE 3
+EXCEPTION_NOERRCODE 4
+EXCEPTION_NOERRCODE 5
+EXCEPTION_NOERRCODE 6
+EXCEPTION_NOERRCODE 7
+EXCEPTION_ERRCODE   8
+EXCEPTION_NOERRCODE 9
+EXCEPTION_ERRCODE   10
+EXCEPTION_ERRCODE   11
+EXCEPTION_ERRCODE   12
+EXCEPTION_ERRCODE   13
+EXCEPTION_ERRCODE   14
+EXCEPTION_NOERRCODE 15
+EXCEPTION_NOERRCODE 16
+EXCEPTION_NOERRCODE 17
+EXCEPTION_NOERRCODE 18
+EXCEPTION_NOERRCODE 19
+EXCEPTION_NOERRCODE 20
+EXCEPTION_NOERRCODE 21
+EXCEPTION_NOERRCODE 22
+EXCEPTION_NOERRCODE 23
+EXCEPTION_NOERRCODE 24
+EXCEPTION_NOERRCODE 25
+EXCEPTION_NOERRCODE 26
+EXCEPTION_NOERRCODE 27
+EXCEPTION_NOERRCODE 28
+EXCEPTION_NOERRCODE 29
+EXCEPTION_NOERRCODE 30
+EXCEPTION_NOERRCODE 31
+
+/* Hardware interrupts. */
+IRQ 0
+IRQ 1
+IRQ 2
+IRQ 3
+IRQ 4
+IRQ 5
+IRQ 6
+IRQ 7
+IRQ 8
+IRQ 9
+IRQ 10
+IRQ 11
+IRQ 12
+IRQ 13
+IRQ 14
+IRQ 15

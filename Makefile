@@ -39,9 +39,8 @@ export DR_CFLAGS
 
 CC := $(CROSS_PREFIX)gcc
 LD := $(CROSS_PREFIX)ld
-# AS := $(CROSS_PREFIX)as
 OBJCOPY := $(CROSS_PREFIX)objcopy
-export CC LD OBJCOPY # AS
+export CC LD OBJCOPY
 
 ARCH_DIR := $(TOPDIR)/arch/$(ARCH)
 BUILD_DIR := $(ARCH_DIR)/build
@@ -63,7 +62,6 @@ image: boot kernel
 	@$(call pretty_build,MKIMAGE,$(call toprelpath,$(IMG)))
 	@chmod +x scripts/mkimage.sh
 	@./scripts/mkimage.sh $(TOPDIR) $(ARCH)
-	# @echo "$(call toprelpath,$(IMG)) is ready"
 
 run: all
 	$(call pretty_build,QEMU,$(ARCH_DIR)/torus.img)

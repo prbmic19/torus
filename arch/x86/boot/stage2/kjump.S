@@ -17,7 +17,7 @@ FUNC_BEGIN(prepare_kernel_jump)
 1:  mov    eax, 0xb16ba115
     mov    ecx, 1
 
-0:  hlt
+1:  hlt
     jmp    1b
 FUNC_END(prepare_kernel_jump)
 
@@ -88,7 +88,7 @@ FUNC_BEGIN_LOCAL(lm_entry)
     call   rax
 
 1:  mov    eax, 0xb16ba115
-    xor    ecx, ecx
+    mov    ecx, 2
 
 1:  hlt
     jmp    1b

@@ -8,16 +8,22 @@ endif
 
 KERNEL_BUILD_DIR := $(BUILD_DIR)/kernel
 ARCH_KERNEL_BUILD_DIR := $(BUILD_DIR)/arch/$(ARCH)/kernel
+DRIVERS_BUILD_DIR := $(BUILD_DIR)/drivers
 
 OBJS = \
-	$(KERNEL_BUILD_DIR)/main.o
+	$(KERNEL_BUILD_DIR)/main.o \
+	$(KERNEL_BUILD_DIR)/irq.o \
+	$(KERNEL_BUILD_DIR)/timer.o \
+	$(DRIVERS_BUILD_DIR)/pic.o \
+	$(DRIVERS_BUILD_DIR)/pit.o
 
 ifeq ($(ARCH),x86)
 ARCH_OBJS = \
 	$(ARCH_KERNEL_BUILD_DIR)/head_s.o \
 	$(ARCH_KERNEL_BUILD_DIR)/head.o \
 	$(ARCH_KERNEL_BUILD_DIR)/idt.o \
-	$(ARCH_KERNEL_BUILD_DIR)/isr.o \
+	$(ARCH_KERNEL_BUILD_DIR)/exception.o \
+	$(ARCH_KERNEL_BUILD_DIR)/irq.o \
 	$(ARCH_KERNEL_BUILD_DIR)/isr_stubs.o
 endif
 
@@ -61,5 +67,10 @@ $(ARCH_KERNEL_BUILD_DIR)/%.o: $(ARCH_DIR)/kernel/%.S
 	@mkdir -p $(dir $@)
 	$(call pretty_build,AS,$@)
 	@$(CC) $(ARCH_ASFLAGS) -c $< -o $@
+
+$(DRIVERS_BUILD_DIR)/%.o: $(TOPDIR)/drivers/%.c
+	@mkdir -p $(dir $@)
+	$(call pretty_build,CC,$@)
+	@$(CC) $(ARCH_CFLAGS) -c $< -o $@
 
 .PHONY: all

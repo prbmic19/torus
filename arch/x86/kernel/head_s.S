@@ -30,7 +30,7 @@ FUNC_BEGIN(kentry)
     xor    eax, eax
     rep stosb
 
-    call   x86_64_kmain
+    call   arch_kmain
 FUNC_END(kentry)
 
 .section .bss, "aw", @nobits
