@@ -29,7 +29,7 @@ void idt_load(void)
     idt_ptr.limit = sizeof(idt_entries) - 1u;
     idt_ptr.base = (unsigned long)idt_entries;
 
-    asm volatile ("lidt %0" : : "m"(idt_ptr));
+    asm volatile ("lidt %0" : : "m"(idt_ptr) : "memory");
 }
 
 void idt_init(void)

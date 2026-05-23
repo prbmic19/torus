@@ -3,28 +3,47 @@
 # Silence!
 MAKEFLAGS += -s --no-print-directory
 
-TOPDIR := $(CURDIR)
-export TOPDIR
-
 SUPPORTED_ARCHS := x86
 
-ifeq ($(wildcard .config),)
-ifeq ($(filter %config,$(MAKECMDGOALS)),)
+ifeq ($(wildcard .config),) # No .config?
+ifeq ($(filter %config,$(MAKECMDGOALS)),) # Target isn't config-related?
+ifeq ($(filter help,$(MAKECMDGOALS)),) # Target isn't help?
 $(error '.config' missing. Run 'make config' first)
+endif
 endif
 endif
 
 -include .config
 
-ifeq ($(filter %config,$(MAKECMDGOALS)),)
-ifeq ($(ARCH),x86)
-CROSS_PREFIX := x86_64-linux-gnu-
-else
+ifeq ($(filter %config,$(MAKECMDGOALS)),) # Target isn't config-related?
+ifeq ($(filter help,$(MAKECMDGOALS)),) # Target isn't help?
+ifeq ($(filter $(ARCH),$(SUPPORTED_ARCHS)),) # Arch isn't supported?
 $(error Architecture '$(ARCH)' is unsupported)
 endif
 endif
+endif
+
+CROSS_PREFIX_x86 := x86_64-linux-gnu-
+CROSS_PREFIX := $(CROSS_PREFIX_$(ARCH))
+
+CC      := $(CROSS_PREFIX)gcc
+LD      := $(CROSS_PREFIX)ld
+OBJCOPY := $(CROSS_PREFIX)objcopy
+
+TOPDIR := $(CURDIR)
+
+ARCH_DIR  := arch/$(ARCH)
+BUILD_DIR := $(ARCH_DIR)/build
+
+IMG := $(ARCH_DIR)/torus.img
+
+# Ensure 'all' is the default target.
+.DEFAULT_GOAL := all
+
+## Flags.
 
 # DR stands for debug/release.
+# DEBUG_BUILD overrides OPT and DEBUG_SYMS.
 ifeq ($(DEBUG_BUILD),y)
 DR_CFLAGS = -ggdb -g3 -O0
 else
@@ -35,47 +54,121 @@ else
 DR_CFLAGS += -s
 endif
 endif
-export DR_CFLAGS
 
-CC := $(CROSS_PREFIX)gcc
-LD := $(CROSS_PREFIX)ld
-OBJCOPY := $(CROSS_PREFIX)objcopy
-export CC LD OBJCOPY
+# Common flags.
+CFLAGS = -ffreestanding -fno-pic -fno-pie -fno-stack-protector \
+	-Wall -Wextra -Werror -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
+ASFLAGS = -I$(TOPDIR)/include -I$(ARCH_DIR)/include $(DR_CFLAGS) -MMD -MP
 
-ARCH_DIR := $(TOPDIR)/arch/$(ARCH)
-BUILD_DIR := $(ARCH_DIR)/build
-export ARCH_DIR BUILD_DIR
-IMG := $(ARCH_DIR)/torus.img
+## Source files.
+
+CSRCS  :=
+ASSRCS :=
+include kernel/sources.mk
+-include $(ARCH_DIR)/sources.mk
+
+## Object files.
+
+OBJS := $(CSRCS:.c=.o) $(ASSRCS:.S=.o)
+OBJS := $(addprefix $(BUILD_DIR)/,$(OBJS))
+
+DEPS := $(OBJS:.o=.d)
+-include $(DEPS)
 
 include scripts/pretty_build.mk
+-include $(ARCH_DIR)/build.mk
 
-all: image
+# Check if an architecture's build.mk defined these flags.
 
-boot:
-	@$(MAKE) -C $(ARCH_DIR)/boot
+ifneq ($(wildcard .config),)
+ifneq ($(filter %config,$(MAKECMDGOALS)),)
+ifeq ($(IMG_DEPS),)
+$(error 'IMG_DEPS' undefined)
+endif
 
-kernel:
-	@$(MAKE) -C kernel
+ifeq ($(RUN_CMD),)
+$(error 'RUN_CMD' undefined)
+endif
 
-image: boot kernel
-	@test -f scripts/mkimage.sh || (echo "'scripts/mkimage.sh' not found."; exit 1)
-	@$(call pretty_build,MKIMAGE,$(call toprelpath,$(IMG)))
+ifeq ($(ARCH_CFLAGS_BOOT),)
+$(error 'ARCH_CFLAGS_BOOT' undefined)
+endif
+
+ifeq ($(ARCH_CFLAGS_KERNEL),)
+$(error 'ARCH_CFLAGS_KERNEL' undefined)
+endif
+
+ifeq ($(ARCH_ASFLAGS_BOOT),)
+$(error 'ARCH_ASFLAGS_BOOT' undefined)
+endif
+
+ifeq ($(ARCH_ASFLAGS_KERNEL),)
+$(error 'ARCH_ASFLAGS_KERNEL' undefined)
+endif
+
+ifeq ($(ARCH_INCLUDE),)
+$(error 'ARCH_INCLUDE' undefined)
+endif
+endif
+endif
+
+all: $(IMG)
+
+## Generic C.
+
+$(BUILD_DIR)/kernel/%.o: kernel/%.c
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,CC,$@)
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/drivers/%.o: drivers/%.c
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,CC,$@)
+	@$(CC) $(CFLAGS) -I$(ARCH_INCLUDE) -c $< -o $@
+
+## Arch-specific C (kernel and bootloader).
+
+$(BUILD_DIR)/$(ARCH_DIR)/kernel/%.o: $(ARCH_DIR)/kernel/%.c
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,CC,$@)
+	@$(CC) $(ARCH_CFLAGS_KERNEL) -c $< -o $@
+
+$(BUILD_DIR)/$(ARCH_DIR)/boot/%.o: $(ARCH_DIR)/boot/%.c
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,CC,$@)
+	@$(CC) $(ARCH_CFLAGS_BOOT) -c $< -o $@
+
+## Assembly (kernel and bootloader) (arch-specific, of course).
+
+$(BUILD_DIR)/$(ARCH_DIR)/kernel/%.o: $(ARCH_DIR)/kernel/%.S
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,AS,$@)
+	@$(CC) $(ARCH_ASFLAGS_KERNEL) -c $< -o $@
+
+$(BUILD_DIR)/$(ARCH_DIR)/boot/%.o: $(ARCH_DIR)/boot/%.S
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,AS,$@)
+	@$(CC) $(ARCH_ASFLAGS_BOOT) -c $< -o $@
+
+$(IMG): $(IMG_DEPS)
+	@[ -f scripts/mkimage.sh ] || (echo "'scripts/mkimage.sh' not found."; exit 1)
+	@$(call pretty_build,MKIMAGE,$(IMG))
 	@chmod +x scripts/mkimage.sh
 	@./scripts/mkimage.sh $(TOPDIR) $(ARCH)
 
-run: all
-	$(call pretty_build,QEMU,$(ARCH_DIR)/torus.img)
-	@which qemu-system-x86_64 > /dev/null || (echo "'qemu-system-x86_64' not found."; exit 1)
-	@qemu-system-x86_64 -drive format=raw,file=$(IMG),if=ide -boot c
+## Other targets.
+
+run: $(IMG)
+	$(RUN_CMD)
 
 clean:
 	$(call pretty_build,CLEAN,$(BUILD_DIR))
-	$(call pretty_build,CLEAN,$(ARCH_DIR)/torus.img)
+	$(call pretty_build,CLEAN,$(IMG))
 	@rm -rf $(BUILD_DIR) $(IMG)
 
 purge: clean
 	$(call pretty_build,CLEAN,.config .config.old)
-	@rm -rf .config*
+	@rm -rf .config .config.old
 
 # LOL
 unmake: purge
@@ -98,10 +191,7 @@ showconfig:
 
 help:
 	@echo "Build targets:"
-	@echo "  all         - Build all targets marked with '*'."
-	@echo "* boot        - Build the bootloader."
-	@echo "* kernel      - Build the kernel."
-	@echo "* image       - Build the OS image."
+	@echo "  all         - Build the bootloader, kernel, and OS image."
 	@echo ""
 	@echo "Other targets:"
 	@echo "  run         - Run the OS with QEMU."
@@ -111,4 +201,4 @@ help:
 	@echo "  config      - Update build config."
 	@echo "  showconfig  - Display current build config."
 
-.PHONY: all boot kernel image run clean purge listarch config showconfig
+.PHONY: all run clean purge unmake listarch config showconfig

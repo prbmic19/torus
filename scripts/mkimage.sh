@@ -27,7 +27,7 @@ read_size_from_bin() {
 
 # For calculating sector count.
 get_sector_count() {
-    echo $(( ( ($1 + 511) / 512 ) ))
+    echo $((($1 + 511) / 512))
 }
 
 build_x86_image() {
@@ -46,9 +46,9 @@ build_x86_image() {
     # Sector N..M = kernel
 
     local stage2_lba=1
-    local kernel_lba=$(( stage2_lba + stage2_sectors ))
+    local kernel_lba=$((stage2_lba + stage2_sectors))
 
-    local total_sectors=$(( 1 + stage2_sectors + kernel_sectors ))
+    local total_sectors=$((1 + stage2_sectors + kernel_sectors))
 
     dd if=/dev/zero of="$IMG" bs=512 count="$total_sectors" status=none
 

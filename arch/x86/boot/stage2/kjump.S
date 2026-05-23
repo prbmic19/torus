@@ -52,6 +52,8 @@ FUNC_BEGIN_LOCAL(lm_entry)
     mov    ds, ax
     mov    ss, ax
     mov    es, ax
+
+    xor    ax, ax
     mov    fs, ax
     mov    gs, ax
 

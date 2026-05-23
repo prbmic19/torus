@@ -211,7 +211,7 @@ err_disk_read:
     .asciz "Disk read error.\r\n"
 
 err_no_stage2:
-    .asciz "Invalid 2nd stage bootloader.\r\n"
+    .asciz "Invalid 2nd-stage bootloader.\r\n"
 
 buf_hex_out:
     .asciz "0x0000"

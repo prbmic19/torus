@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <torus/types.h>
 #include <kernel/irq.h>
 
 static irq_handler_t irq_handlers[IRQ_MAX];
@@ -21,7 +22,7 @@ void irq_unregister_handler(int irq)
         return;
     }
 
-    irq_handlers[irq] = (irq_handler_t)0;
+    irq_handlers[irq] = NULL;
 }
 
 void irq_dispatch(int irq, struct regs *regs)

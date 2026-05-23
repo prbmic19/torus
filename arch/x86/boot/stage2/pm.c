@@ -19,7 +19,7 @@ static void *pm_memcpy(void *restrict dest, const void *restrict src, size_t n)
     u8 *restrict d = (u8 *restrict)dest;
     const u8 *restrict s = (const u8 *restrict)src;
     
-    for (size_t i = 0u; i < n; i++)
+    for (size_t i = 0; i < n; i++)
     {
         d[i] = s[i];
     }
@@ -29,15 +29,15 @@ static void *pm_memcpy(void *restrict dest, const void *restrict src, size_t n)
 
 static void page_tables_init(void)
 {
-    // We currently just have an identity-mapped page table.
+    // For now, build an identity-mapped table.
 
     for (int i = 0; i < 512; i++)
     {
-        pd[i] = ((u64)i * (u64)0x200000u) | (u64)0x83;
+        pd[i] = ((u64)i * (u64)0x200000) | (u64)0x83;
     }
 
-    pdpt[0] = (u64)(u32)pd | (u64)0x03;
-    pml4[0] = (u64)(u32)pdpt | (u64)0x03;
+    pdpt[0] = (u64)(unsigned int)pd | (u64)0x03;
+    pml4[0] = (u64)(unsigned int)pdpt | (u64)0x03;
 }
 
 static void relocate_kernel(size_t kernel_size)
