@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <kernel/console.h>
 #include <asm/exception.h>
 #include <asm/idt.h>
 #include <asm/regs.h>
@@ -76,5 +77,7 @@ void exception_init(void)
 void exception_main_handler(struct regs *regs)
 {
     (void)regs;
-    // For now, do nothing.
+    console_puts("[PANIC] CPU exception occurred. Halting execution.\n"); 
+    // Halt and catch fire!
+    asm volatile ("cli; hlt");
 }

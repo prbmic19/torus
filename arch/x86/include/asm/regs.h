@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef X86_ASM_REGS_H
-#define X86_ASM_REGS_H
+#ifndef ASM_X86_REGS_H
+#define ASM_X86_REGS_H
 
 #include <torus/types.h>
 
@@ -24,4 +24,4 @@ struct regs
     unsigned long rip, cs, rflags, rsp, ss;
 };
 
-#endif // X86_ASM_REGS_H
+#endif // ASM_X86_REGS_H

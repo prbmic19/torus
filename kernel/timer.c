@@ -3,6 +3,7 @@
 #include <torus/types.h>
 #include <kernel/timer.h>
 #include <kernel/irq.h>
+#include <kernel/console.h>
 #include <drivers/pit.h>
 
 static volatile u64 timer_ticks;
@@ -22,4 +23,5 @@ void timer_init(unsigned int hz)
 {
     pit_set_frequency(hz);
     irq_register_handler(IRQ_TIMER, timer_handler);
+    console_puts("[OK] Timer initialized.\n");
 }

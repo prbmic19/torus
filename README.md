@@ -8,7 +8,7 @@ I intend to build a bootloader, kernel, and userspace from scratch. For now, Tor
 
 Very early development.
 
-The kernel sets up basic interrupt handling and a PIT-based timer tick, then enters an idle loop.
+The kernel sets up a minimal serial-backed console, basic interrupt handling, and a PIT-based timer tick, then enters an idle loop.
 
 ## Building
 

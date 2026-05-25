@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef X86_ASM_IDT_H
-#define X86_ASM_IDT_H
+#ifndef ASM_X86_IDT_H
+#define ASM_X86_IDT_H
 
 #include <torus/compiler.h>
 
@@ -28,4 +28,4 @@ extern void idt_set_gate(int gate, void (*handler_address)(void));
 extern void idt_load(void);
 extern void idt_init(void);
 
-#endif // X86_ASM_IDT_H
+#endif // ASM_X86_IDT_H

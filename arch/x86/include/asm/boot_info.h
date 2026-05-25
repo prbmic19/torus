@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef X86_ASM_BOOT_INFO_H
-#define X86_ASM_BOOT_INFO_H
+#ifndef ASM_X86_BOOT_INFO_H
+#define ASM_X86_BOOT_INFO_H
 
 #include <torus/compiler.h>
 #include <torus/types.h>
@@ -13,7 +13,7 @@ struct e820_entry
     u64 base;
     u64 length;
     u32 type;
-    u32 acpi;
+    u32 extended_attributes;
 } __packed;
 
 struct boot_info
@@ -25,12 +25,12 @@ struct boot_info
     u32 timer_ticks;
     u8 keyboard_flags;
     u8 video_mode;
-    u16 video_cols;
-    u16 com_addr[4];
-    u16 lpt_addr[3];
-    u32 ebda;
-    u32 rsd_ptr;
+    u16 video_columns;
+    u16 com_ports[4];
+    u16 lpt_ports[3];
+    u32 ebda_address;
+    u32 rsd_pointer;
     struct e820_entry e820_entries[MAX_E820_ENTRIES];
 } __packed;
 
-#endif // X86_ASM_BOOT_INFO_H
+#endif // ASM_X86_BOOT_INFO_H

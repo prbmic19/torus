@@ -16,12 +16,12 @@ extern __noreturn void prepare_kernel_jump(void);
 
 static void *pm_memcpy(void *restrict dest, const void *restrict src, size_t n)
 {
-    u8 *restrict d = (u8 *restrict)dest;
-    const u8 *restrict s = (const u8 *restrict)src;
+    unsigned char *restrict d = dest;
+    const unsigned char *restrict s = src;
     
-    for (size_t i = 0; i < n; i++)
+    while (n--)
     {
-        d[i] = s[i];
+        *d++ = *s++;
     }
 
     return dest;
@@ -33,11 +33,11 @@ static void page_tables_init(void)
 
     for (int i = 0; i < 512; i++)
     {
-        pd[i] = ((u64)i * (u64)0x200000) | (u64)0x83;
+        pd[i] = ((u64)i * 0x200000) | 0x83;
     }
 
-    pdpt[0] = (u64)(unsigned int)pd | (u64)0x03;
-    pml4[0] = (u64)(unsigned int)pdpt | (u64)0x03;
+    pdpt[0] = (u64)(unsigned long)pd | 0x03;
+    pml4[0] = (u64)(unsigned long)pdpt | 0x03;
 }
 
 static void relocate_kernel(size_t kernel_size)
@@ -47,7 +47,7 @@ static void relocate_kernel(size_t kernel_size)
 
 __noreturn void pm_main(void)
 {
-    relocate_kernel(*(unsigned int *)(KERNEL_SRC + 6)); // Skip 6 magic bytes.
+    relocate_kernel(*(u32 *)(KERNEL_SRC + 6)); // Skip 6 magic bytes.
 
     page_tables_init();
 

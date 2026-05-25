@@ -19,12 +19,14 @@ STAGE2_OBJS := $(filter $(BUILD_DIR)/$(STAGE2_DIR)/%,$(OBJS))
 KERNEL_OBJS := $(filter \
 	$(BUILD_DIR)/$(ARCH_KERNEL_DIR)/% \
 	$(BUILD_DIR)/kernel/% \
-	$(BUILD_DIR)/drivers/%,$(OBJS))
+	$(BUILD_DIR)/drivers/% \
+	$(BUILD_DIR)/lib/%,$(OBJS))
 
 RUN_CMD := \
 	$(call pretty_build,QEMU,$(IMG)); \
 	which qemu-system-x86_64 > /dev/null || (echo "'qemu-system-x86_64' not found."; exit 1); \
-	qemu-system-x86_64 -drive format=raw,file=$(IMG),if=ide -boot c
+	qemu-system-x86_64 -drive format=raw,file=$(IMG),if=ide -boot c -no-reboot -no-shutdown \
+	-serial stdio
 
 ## Bootloader.
 

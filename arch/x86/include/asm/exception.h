@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef X86_ASM_EXCEPTION_H
-#define X86_ASM_EXCEPTION_H
+#ifndef ASM_X86_EXCEPTION_H
+#define ASM_X86_EXCEPTION_H
 
 extern void exception_init(void);
 
-#endif // X86_ASM_EXCEPTION_H
+#endif // ASM_X86_EXCEPTION_H

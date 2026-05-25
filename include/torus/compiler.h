@@ -8,8 +8,11 @@
 #define __aligned_max   __attribute__((__aligned__))
 #define __packed        __attribute__((__packed__))
 #define __used          __attribute__((__used__))
+#define __unused        __attribute__((__unused__))
 #define __section(_s)   __attribute__((__section__(_s)))
 #define __pure          __attribute__((__pure__))
+#define __const         __attribute__((__const__))
+#define __nonnull(...)  __attribute__((__nonnull__(__VA_ARGS__)))
 
 #define fallthrough     __attribute__((__fallthrough__))
 

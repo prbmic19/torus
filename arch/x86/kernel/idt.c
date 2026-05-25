@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <torus/compiler.h>
+#include <kernel/console.h>
 #include <asm/idt.h>
 #include <asm/exception.h>
 #include <asm/irq.h>
@@ -26,7 +27,7 @@ void idt_set_gate(int gate, void (*handler_address)(void))
 
 void idt_load(void)
 {
-    idt_ptr.limit = sizeof(idt_entries) - 1u;
+    idt_ptr.limit = sizeof(idt_entries) - 1;
     idt_ptr.base = (unsigned long)idt_entries;
 
     asm volatile ("lidt %0" : : "m"(idt_ptr) : "memory");
@@ -37,4 +38,5 @@ void idt_init(void)
     exception_init();
     irq_init();
     idt_load();
+    console_puts("[OK] IDT initialized.\n");
 }

@@ -45,7 +45,7 @@ IMG := $(ARCH_DIR)/torus.img
 # DR stands for debug/release.
 # DEBUG_BUILD overrides OPT and DEBUG_SYMS.
 ifeq ($(DEBUG_BUILD),y)
-DR_CFLAGS = -ggdb -g3 -O0
+DR_CFLAGS = -ggdb -g3 -O2
 else
 DR_CFLAGS = -O$(OPT)
 ifeq ($(DEBUG_SYMS),y)
@@ -56,8 +56,9 @@ endif
 endif
 
 # Common flags.
-CFLAGS = -ffreestanding -fno-pic -fno-pie -fno-stack-protector \
-	-Wall -Wextra -Werror -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
+CFLAGS = -ffreestanding -fno-pic -fno-pie -fno-stack-protector -fno-strict-aliasing \
+	-fno-builtin -Wall -Wextra -Werror -Wshadow -Wundef -Wimplicit-fallthrough \
+	-Wstrict-prototypes -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
 ASFLAGS = -I$(TOPDIR)/include -I$(ARCH_DIR)/include $(DR_CFLAGS) -MMD -MP
 
 ## Source files.
@@ -126,6 +127,11 @@ $(BUILD_DIR)/drivers/%.o: drivers/%.c
 	@$(call pretty_build,CC,$@)
 	@$(CC) $(CFLAGS) -I$(ARCH_INCLUDE) -c $< -o $@
 
+$(BUILD_DIR)/lib/%.o: lib/%.c
+	@mkdir -p $(dir $@)
+	@$(call pretty_build,CC,$@)
+	@$(CC) $(CFLAGS) -c $< -o $@
+
 ## Arch-specific C (kernel and bootloader).
 
 $(BUILD_DIR)/$(ARCH_DIR)/kernel/%.o: $(ARCH_DIR)/kernel/%.c
@@ -178,13 +184,13 @@ listarch:
 	@echo "  $(SUPPORTED_ARCHS)"
 
 config:
-	@test -f scripts/config.sh || (echo "'scripts/config.sh' not found."; exit 1)
+	@[ -f scripts/config.sh ] || (echo "'scripts/config.sh' not found."; exit 1)
 	$(call pretty_build,CALL,scripts/config.sh)
 	@chmod +x scripts/config.sh
 	@./scripts/config.sh $(TOPDIR)
 
 showconfig:
-	@test -f scripts/config.sh || (echo "'scripts/config.sh' not found."; exit 1)
+	@[ -f scripts/config.sh ] || (echo "'scripts/config.sh' not found."; exit 1)
 	$(call pretty_build,CALL,scripts/config.sh)
 	@chmod +x scripts/config.sh
 	@./scripts/config.sh $(TOPDIR) show

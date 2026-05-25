@@ -5,7 +5,7 @@
 
 __noreturn void kmain(void)
 {
-    timer_init(100u);
+    timer_init(100);
 
     while (1)
     {
