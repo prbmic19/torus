@@ -23,5 +23,5 @@ void timer_init(unsigned int hz)
 {
     pit_set_frequency(hz);
     irq_register_handler(IRQ_TIMER, timer_handler);
-    console_puts("[OK] Timer initialized.\n");
+    console_puts("[NOTICE] Timer initialized.\n");
 }

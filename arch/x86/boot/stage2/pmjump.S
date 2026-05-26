@@ -44,12 +44,7 @@ FUNC_BEGIN_LOCAL(pm_entry)
     xor    esi, esi
     xor    edi, edi
 
-    /* Clear BSS. */
-    lea    edi, [__bss_start]
-    lea    ecx, [__bss_end]
-    sub    ecx, edi
-    xor    eax, eax
-    rep stosb
+    cld
 
     call   pm_main
 

@@ -38,5 +38,5 @@ void idt_init(void)
     exception_init();
     irq_init();
     idt_load();
-    console_puts("[OK] IDT initialized.\n");
+    console_puts("[NOTICE] IDT initialized.\n");
 }

@@ -23,7 +23,11 @@ __noreturn void arch_kmain(void)
     if (!serial_init(&boot_info))
     {
         // Halt and catch fire!
-        asm volatile ("cli; hlt");
+        asm volatile ("cli" : : : "memory");
+        while (1)
+        {
+            asm volatile ("hlt");
+        }
     }
 
     console_init(&serial_console);

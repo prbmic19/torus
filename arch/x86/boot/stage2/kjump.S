@@ -85,6 +85,8 @@ FUNC_BEGIN_LOCAL(lm_entry)
     repe cmpsb
     jne    1f
 
+    cld
+
     /* Now, transfer control to the kernel. */
     mov    rax, [KERNEL_ADDRESS + 10]
     call   rax

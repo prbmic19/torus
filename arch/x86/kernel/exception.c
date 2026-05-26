@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <torus/compiler.h>
 #include <kernel/console.h>
 #include <asm/exception.h>
 #include <asm/idt.h>
@@ -74,10 +75,16 @@ void exception_init(void)
     idt_set_gate(31, exception31);
 }
 
-void exception_main_handler(struct regs *regs)
+__noreturn void exception_main_handler(struct regs *regs)
 {
     (void)regs;
+    
     console_puts("[PANIC] CPU exception occurred. Halting execution.\n"); 
+    
     // Halt and catch fire!
-    asm volatile ("cli; hlt");
+    asm volatile ("cli" : : : "memory");
+    while (1)
+    {
+        asm volatile ("hlt");
+    }
 }

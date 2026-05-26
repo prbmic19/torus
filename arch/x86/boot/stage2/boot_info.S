@@ -4,7 +4,9 @@
 
 /* 
  * Gather all information we can while we have access to the BIOS.
- * Store it somewhere low and safe, at 0x680.
+ * Store it somewhere low and safe, at 0x680. Then we will find an
+ * E820 entry with a base that is greater than or equal to 0x100000,
+ * and load the kernel there.
  */
 
 #define BOOT_INFO_ADDR  0x680
@@ -72,6 +74,15 @@ FUNC_BEGIN(stage2_entry)
     lea    sp, [stack_top]
     and    sp, -16
 
+    cld
+
+    /* Clear BSS. */
+    lea    di, [__bss_start]
+    lea    cx, [__bss_end]
+    sub    cx, di
+    xor    ax, ax
+    rep stosb
+
     /* Verify a few things first. */
     call   verify_cpuid
     call   verify_long
@@ -115,7 +126,7 @@ FUNC_BEGIN_LOCAL(verify_cpuid)
     pop    ax
     ret
 
-1:  lea    si, [err_no_cpuid]
+1:  lea    si, [error_no_cpuid]
     call   rm_print
 
 1:  hlt
@@ -137,7 +148,7 @@ FUNC_BEGIN_LOCAL(verify_long)
     popa
     ret
 
-1:  lea    si, [err_no_long]
+1:  lea    si, [error_no_long]
     call   rm_print
 
 1:  hlt
@@ -153,8 +164,8 @@ FUNC_BEGIN_LOCAL(gather_boot_info)
     mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 2], 'F'
     mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 3], 'O'
 
-    mov    cx, 0x2000
     lea    di, [BOOT_INFO_ADDR + 4]
+    mov    cx, 0x2000
     xor    ax, ax
     rep stosb
 
@@ -402,17 +413,17 @@ OBJ_BEGIN_LOCAL(rsdp_signature)
     .ascii "RSD PTR "
 OBJ_END(rsdp_signature)
 
-OBJ_BEGIN_LOCAL(err_no_cpuid)
+OBJ_BEGIN_LOCAL(error_no_cpuid)
     .asciz "Processor does not support CPUID.\r\n"
-OBJ_END(err_no_cpuid)
+OBJ_END(error_no_cpuid)
 
-OBJ_BEGIN_LOCAL(err_no_long)
+OBJ_BEGIN_LOCAL(error_no_long)
     .asciz "Processor does not support long mode.\r\n"
-OBJ_END(err_no_long)
+OBJ_END(error_no_long)
 
 .section .bss, "aw", @nobits
 
-/* We'll reuse this later, so it's global. */
-SYM_BEGIN(stack_bottom)
+OBJ_BEGIN(stack)
     .space 0x1000
+OBJ_END(stack)
 SYM_BEGIN_U(stack_top)

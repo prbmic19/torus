@@ -2,9 +2,11 @@
 
 #include <torus/types.h>
 #include <torus/compiler.h>
+#include <asm/boot_info.h>
 
 #define KERNEL_SRC  ((void *)0x10000)
-#define KERNEL_DEST ((void *)0x100000)
+
+struct boot_info *boot_info = (struct boot_info *)0x680;
 
 u64 pml4[512] __aligned(0x1000);
 u64 pdpt[512] __aligned(0x1000);
@@ -40,14 +42,45 @@ static void page_tables_init(void)
     pml4[0] = (u64)(unsigned long)pdpt | 0x03;
 }
 
-static void relocate_kernel(size_t kernel_size)
+static void relocate_kernel(void)
 {
-    pm_memcpy(KERNEL_DEST, KERNEL_SRC, kernel_size);
+    // Walk the E820 map until we find an entry with a base that is greater than or
+    // equal to 0x100000 (must be usable RAM) and relocate the kernel there.
+    
+    void *kernel_reloc_dest = NULL;
+
+    for (size_t i = 0; i < MAX_E820_ENTRIES; i++)
+    {
+        struct e820_entry *entry = &boot_info->e820_entries[i];
+        
+        if (!entry->base && !entry->length && !entry->type)
+        {
+            break;
+        }
+
+        if (entry->base >= 0x100000 && entry->type == 1)
+        {
+            kernel_reloc_dest = (void *)(unsigned long)entry->base;
+            break;
+        }
+    }
+
+    // We didn't find anything? Uh-oh.
+    if (!kernel_reloc_dest)
+    {
+        // At this point, we have no way of reporting an error besides halting.
+        while (1)
+        {
+            asm volatile ("hlt");
+        }
+    }
+
+    pm_memcpy(kernel_reloc_dest, KERNEL_SRC, *(u32 *)(KERNEL_SRC + 6));
 }
 
 __noreturn void pm_main(void)
 {
-    relocate_kernel(*(u32 *)(KERNEL_SRC + 6)); // Skip 6 magic bytes.
+    relocate_kernel();
 
     page_tables_init();
 

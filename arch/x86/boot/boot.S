@@ -11,9 +11,10 @@
 #define KERNEL_SEGMENT 0x1000
 #define KERNEL_OFFSET  0x0000
 
-/* Header layout for stage2 and kernel (excludes entry point). */
+/* Header layout for stage2 and kernel. */
 #define IMAGE_MAGIC_OFFSET 0
 #define IMAGE_SIZE_OFFSET  6
+#define IMAGE_ENTRY_OFFSET 10
 
 .code16
 
@@ -96,7 +97,7 @@ boot:
     jne    1f
 
     /* Transfer control to stage 2. */
-    call   word ptr [STAGE2_OFFSET + 10]
+    call   word ptr [STAGE2_OFFSET + IMAGE_ENTRY_OFFSET]
 
 1:  lea    si, [err_no_stage2]
     call   rm_print
