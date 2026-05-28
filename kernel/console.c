@@ -8,7 +8,7 @@ static struct console *current_console;
 void console_init(struct console *console)
 {
     current_console = console;
-    kprintf("[NOTICE] Console initialized.\n");
+    pr_notice("Console initialized.\n");
 }
 
 void console_putchar(int ch)

@@ -23,5 +23,5 @@ void timer_init(unsigned int hz)
 {
     pit_set_freq(hz);
     irq_register_handler(IRQ_TIMER, timer_handler);
-    kprintf("[NOTICE] Timer initialized.\n");
+    pr_notice("Timer initialized.\n");
 }

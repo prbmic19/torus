@@ -83,7 +83,7 @@ __nonnull(1) __pure size_t strlen(const char *s)
 {
     const char *t = s;
     
-    while (*t)
+    while (*t != '\0')
     {
         t++;
     }
@@ -118,13 +118,13 @@ __nonnull(1, 2) char *strncpy(char *restrict dst, const char *restrict src, size
 {
     char *d = dst;
 
-    while (dsize && *src)
+    while (dsize != 0 && *src)
     {
         *d++ = *src++;
         dsize--;
     }
 
-    while (dsize)
+    while (dsize != 0)
     {
         *d++ = '\0';
         dsize--;
@@ -153,7 +153,7 @@ __nonnull(1, 2) __pure int strncmp(const char *restrict s1, const char *restrict
         n--;
     }
 
-    if (!n)
+    if (n == 0)
     {
         return 0;
     }
@@ -163,7 +163,7 @@ __nonnull(1, 2) __pure int strncmp(const char *restrict s1, const char *restrict
 
 __nonnull(1) __pure char *strchr(const char *s, int c)
 {
-    while (*s)
+    while (*s != '\0')
     {
         if (*(unsigned char *)s == (unsigned char)c)
         {

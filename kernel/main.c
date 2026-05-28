@@ -2,6 +2,8 @@
 
 #include <torus/compiler.h>
 #include <kernel/timer.h>
+#include <kernel/irq.h>
+#include <kernel/panic.h>
 
 __noreturn void kmain(void)
 {
@@ -9,6 +11,6 @@ __noreturn void kmain(void)
 
     while (1)
     {
-        asm volatile ("hlt");
+        native_safe_halt();
     }
 }

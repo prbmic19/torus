@@ -56,7 +56,7 @@ static void relocate_kernel(void)
         struct e820_entry *entry = &boot_info->e820_entries[i];
         
         // If these are all zero (except ext_attr, it might be nonzero), we've reached the end.
-        if (!entry->base && !entry->length && !entry->type)
+        if (entry->base == 0 && entry->length == 0 && entry->type == 0)
         {
             break;
         }

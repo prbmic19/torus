@@ -7,7 +7,8 @@ CSRCS += \
 	$(ARCH_KERNEL_DIR)/head.c \
 	$(ARCH_KERNEL_DIR)/idt.c \
 	$(ARCH_KERNEL_DIR)/irq.c \
-	$(ARCH_KERNEL_DIR)/exception.c
+	$(ARCH_KERNEL_DIR)/exception.c \
+	$(ARCH_KERNEL_DIR)/regs.c
 
 ASSRCS += \
 	$(BOOT_DIR)/boot.S \

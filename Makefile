@@ -57,8 +57,8 @@ endif
 
 # Common flags.
 CFLAGS = -ffreestanding -fno-pic -fno-pie -fno-stack-protector -fno-strict-aliasing \
-	-fno-builtin -Wall -Wextra -Werror -Wshadow -Wundef -Wimplicit-fallthrough \
-	-Wstrict-prototypes -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
+	-fno-builtin -fno-omit-frame-pointer -Wall -Wextra -Werror -Wshadow -Wundef \
+	-Wimplicit-fallthrough -Wstrict-prototypes -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
 ASFLAGS = -I$(TOPDIR)/include -I$(ARCH_DIR)/include $(DR_CFLAGS) -MMD -MP
 
 ## Source files.
@@ -120,7 +120,7 @@ all: $(IMG)
 $(BUILD_DIR)/kernel/%.o: kernel/%.c
 	@mkdir -p $(dir $@)
 	@$(call pretty_build,CC,$@)
-	@$(CC) $(ARCH_CFLAGS_KERNEL_NO_INC) -c $< -o $@
+	@$(CC) $(ARCH_CFLAGS_KERNEL) -c $< -o $@
 
 $(BUILD_DIR)/drivers/%.o: drivers/%.c
 	@mkdir -p $(dir $@)

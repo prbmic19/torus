@@ -21,7 +21,7 @@ FUNC_BEGIN(kentry)
 
     cld
 
-    lea    rsp, [rip + stack_top]
+    lea    rsp, [rip + __stack_top]
     and    rsp, -16
     mov    rbp, rsp
 
@@ -37,7 +37,7 @@ FUNC_END(kentry)
 
 .section .bss, "aw", @nobits
 
-OBJ_BEGIN_LOCAL(stack)
+OBJ_BEGIN(__stack)
     .space 0x8000
-OBJ_END(stack)
-SYM_BEGIN_LOCAL_U(stack_top)
+OBJ_END(__stack)
+SYM_BEGIN_U(__stack_top)

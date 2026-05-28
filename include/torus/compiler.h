@@ -13,7 +13,7 @@
 #define __pure          __attribute__((__pure__))
 #define __const         __attribute__((__const__))
 #define __nonnull(...)  __attribute__((__nonnull__(__VA_ARGS__)))
-#define __format(...)   __attribute__((__format__(__VA_ARGS__)))
+#define __printf(...)   __attribute__((__format__(__printf__, __VA_ARGS__)))
 
 #define fallthrough     __attribute__((__fallthrough__))
 

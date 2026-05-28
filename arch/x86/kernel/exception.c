@@ -1,10 +1,46 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <torus/compiler.h>
-#include <kernel/console.h>
+#include <kernel/panic.h>
+#include <kernel/irq.h>
 #include <asm/exception.h>
 #include <asm/idt.h>
 #include <asm/regs.h>
+
+const char *const exception_messages[32] = {
+    "Division error",
+    "Debug",
+    "NMI",
+    "Breakpoint",
+    "Overflow",
+    "Bound range exceeded",
+    "Invalid opcode",
+    "No coprocessor",
+    "Double fault",
+    "Coprocessor segment overrun",
+    "Bad TSS",
+    "Segment not present",
+    "Stack fault",
+    "General protection fault",
+    "Page fault",
+    "(reserved)",
+    "Coprocessor fault",
+    "Alignment check",
+    "Machine check",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)",
+    "(reserved)"
+};
 
 extern void exception0(void);
 extern void exception1(void);
@@ -77,14 +113,5 @@ void exception_init(void)
 
 __noreturn void exception_main_handler(struct regs *regs)
 {
-    (void)regs;
-    
-    console_puts("[PANIC] CPU exception occurred. Halting execution.\n"); 
-    
-    // Halt and catch fire!
-    asm volatile ("cli" : : : "memory");
-    while (1)
-    {
-        asm volatile ("hlt");
-    }
+    panic("%s exception occurred. Error code: %lu.", exception_messages[regs->orig_rax], regs->errcode);
 }

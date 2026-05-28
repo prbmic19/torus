@@ -38,5 +38,5 @@ void idt_init(void)
     exception_init();
     irq_init();
     idt_load();
-    kprintf("[NOTICE] IDT initialized.\n");
+    pr_notice("IDT initialized.\n");
 }
