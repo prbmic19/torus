@@ -1,6 +1,7 @@
 ARCH_INCLUDE := arch/x86/include
 
-ARCH_CFLAGS_KERNEL := $(CFLAGS) -I$(ARCH_INCLUDE) -m64 -mno-red-zone -mgeneral-regs-only
+ARCH_CFLAGS_KERNEL_NO_INC := $(CFLAGS) -m64 -mno-red-zone -mgeneral-regs-only
+ARCH_CFLAGS_KERNEL := $(ARCH_CFLAGS_KERNEL_NO_INC) -I$(ARCH_INCLUDE)
 ARCH_CFLAGS_BOOT := $(CFLAGS) -I$(ARCH_INCLUDE) -m32 -mno-red-zone -mgeneral-regs-only
 ARCH_ASFLAGS_KERNEL := $(ASFLAGS) -I$(ARCH_INCLUDE) -m64
 ARCH_ASFLAGS_BOOT := $(ASFLAGS) -I$(ARCH_INCLUDE) -m32

@@ -19,6 +19,8 @@ SYM_BEGIN_LOCAL_U(kernel_end)       /* Placed at the end by the linker. */
 FUNC_BEGIN(kentry)
     endbr64
 
+    cld
+
     lea    rsp, [rip + stack_top]
     and    rsp, -16
     mov    rbp, rsp
@@ -35,6 +37,7 @@ FUNC_END(kentry)
 
 .section .bss, "aw", @nobits
 
-SYM_BEGIN_LOCAL(stack_bottom)
-.space 0x8000
+OBJ_BEGIN_LOCAL(stack)
+    .space 0x8000
+OBJ_END(stack)
 SYM_BEGIN_LOCAL_U(stack_top)

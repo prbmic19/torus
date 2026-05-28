@@ -10,6 +10,6 @@ struct console
 
 void console_init(struct console *console);
 void console_putchar(int ch);
-void console_puts(const char *string);
+void console_puts(const char *str);
 
 #endif // KERNEL_CONSOLE_H

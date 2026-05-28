@@ -45,20 +45,23 @@ static void page_tables_init(void)
 static void relocate_kernel(void)
 {
     // Walk the E820 map until we find an entry with a base that is greater than or
-    // equal to 0x100000 (must be usable RAM) and relocate the kernel there.
+    // equal to 0x100000 (must be usable RAM) that could fit the entire kernel,
+    // and relocate the kernel there.
     
     void *kernel_reloc_dest = NULL;
+    size_t kernel_size = *(u32 *)(KERNEL_SRC + 6);
 
     for (size_t i = 0; i < MAX_E820_ENTRIES; i++)
     {
         struct e820_entry *entry = &boot_info->e820_entries[i];
         
+        // If these are all zero (except ext_attr, it might be nonzero), we've reached the end.
         if (!entry->base && !entry->length && !entry->type)
         {
             break;
         }
 
-        if (entry->base >= 0x100000 && entry->type == 1)
+        if (entry->base >= 0x100000 && entry->length >= kernel_size && entry->type == 1)
         {
             kernel_reloc_dest = (void *)(unsigned long)entry->base;
             break;
@@ -75,7 +78,7 @@ static void relocate_kernel(void)
         }
     }
 
-    pm_memcpy(kernel_reloc_dest, KERNEL_SRC, *(u32 *)(KERNEL_SRC + 6));
+    pm_memcpy(kernel_reloc_dest, KERNEL_SRC, kernel_size);
 }
 
 __noreturn void pm_main(void)

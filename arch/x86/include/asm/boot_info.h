@@ -13,7 +13,7 @@ struct e820_entry
     u64 base;
     u64 length;
     u32 type;
-    u32 extended_attributes;
+    u32 ext_attr;
 } __packed;
 
 struct boot_info
@@ -23,13 +23,13 @@ struct boot_info
     u8 disk_drive_count;
     u16 base_mem_size;
     u32 timer_ticks;
-    u8 keyboard_flags;
+    u8 kbd_flags;
     u8 video_mode;
-    u16 video_columns;
+    u16 video_cols;
     u16 com_ports[4];
     u16 lpt_ports[3];
-    u32 ebda_address;
-    u32 rsd_pointer;
+    u32 ebda_addr;
+    u32 rsd_ptr;
     struct e820_entry e820_entries[MAX_E820_ENTRIES];
 } __packed;
 

@@ -3,7 +3,7 @@
 #include <drivers/pit.h>
 #include <asm/io.h>
 
-void pit_set_frequency(unsigned int hz)
+void pit_set_freq(unsigned int hz)
 {
     unsigned int divisor = PIT_TICK_RATE / hz;
 

@@ -8,6 +8,6 @@
 #define PIT_MODE     0x43
 #define PIT_CHANNEL0 0x40
 
-extern void pit_set_frequency(unsigned int hz);
+extern void pit_set_freq(unsigned int hz);
 
 #endif // DRIVERS_PIT_H

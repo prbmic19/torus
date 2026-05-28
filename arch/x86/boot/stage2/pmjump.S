@@ -60,13 +60,23 @@ FUNC_END(pm_entry)
 OBJ_BEGIN_LOCAL(gdt)
     .quad 0
 
-    /* 64-bit descriptors (kernel code and data). */
+    /* Change this once we have syscalls. (SYSRET mandates special GDT layout.)
+
+    /* Kernel code and data, 64-bit. */
     .quad 0x00af9a000000ffff
     .quad 0x00af92000000ffff
 
-    /* 32-bit descriptors (kernel code and data). */
+    /* Kernel code and data, 32-bit. */
     .quad 0x00cf9a000000ffff
     .quad 0x00cf92000000ffff
+
+    /* User code and data, 64-bit. */
+    .quad 0x00affa000000ffff
+    .quad 0x00aff2000000ffff
+
+    /* User code and data, 32-bit. */
+    .quad 0x00cffa000000ffff
+    .quad 0x00cff2000000ffff
 OBJ_END(gdt)
 
 SYM_BEGIN_LOCAL_U(gdt_end)

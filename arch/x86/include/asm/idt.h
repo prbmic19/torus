@@ -18,13 +18,13 @@ struct idt_entry
     unsigned short offset_low;
     unsigned short selector;
     unsigned char ist; // Plus 5 reserved bits.
-    unsigned char type_attributes;
+    unsigned char type_attr;
     unsigned short offset_mid;
     unsigned int offset_high;
     unsigned int reserved;
 } __packed;
 
-extern void idt_set_gate(int gate, void (*handler_address)(void));
+extern void idt_set_gate(int gate, void (*handler_addr)(void));
 extern void idt_load(void);
 extern void idt_init(void);
 

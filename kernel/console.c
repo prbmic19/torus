@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <kernel/console.h>
+#include <kernel/kprintf.h>
 
 static struct console *current_console;
 
 void console_init(struct console *console)
 {
     current_console = console;
-    console_puts("[NOTICE] Console initialized.\n");
+    kprintf("[NOTICE] Console initialized.\n");
 }
 
 void console_putchar(int ch)
@@ -26,10 +27,10 @@ void console_putchar(int ch)
     current_console->putchar(ch);
 }
 
-void console_puts(const char *string)
+void console_puts(const char *str)
 {
-    while (*string)
+    while (*str)
     {
-        console_putchar(*string++);
+        console_putchar(*str++);
     }
 }

@@ -120,17 +120,17 @@ all: $(IMG)
 $(BUILD_DIR)/kernel/%.o: kernel/%.c
 	@mkdir -p $(dir $@)
 	@$(call pretty_build,CC,$@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(ARCH_CFLAGS_KERNEL_NO_INC) -c $< -o $@
 
 $(BUILD_DIR)/drivers/%.o: drivers/%.c
 	@mkdir -p $(dir $@)
 	@$(call pretty_build,CC,$@)
-	@$(CC) $(CFLAGS) -I$(ARCH_INCLUDE) -c $< -o $@
+	@$(CC) $(ARCH_CFLAGS_KERNEL) -c $< -o $@
 
 $(BUILD_DIR)/lib/%.o: lib/%.c
 	@mkdir -p $(dir $@)
 	@$(call pretty_build,CC,$@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(ARCH_CFLAGS_KERNEL_NO_INC) -c $< -o $@
 
 ## Arch-specific C (kernel and bootloader).
 
