@@ -25,8 +25,8 @@ struct regs
     unsigned long rip, cs, rflags, rsp, ss;
 };
 
-// This clears the .orig_rax, .errcode, .cs, and .ss fields in struct regs.
-__always_inline static void save_regs(struct regs *regs)
+// This clears the .orig_rax, .errcode, .cs, and .ss fields.
+__always_inline static void context_save(struct regs *regs)
 {
     // Save RIP first.
     asm volatile (
@@ -66,61 +66,66 @@ __always_inline static void save_regs(struct regs *regs)
     regs->ss = 0;
 }
 
-__always_inline static void native_read_cr0(unsigned long *cr0)
+__always_inline static unsigned long read_cr0(void)
 {
-    asm volatile (
-        "movq %%cr0, %%rax\n\t"
-        "movq %%rax, %0"
-        : "=m"(*cr0)
-        :
-        : "rax", "memory"
-    );
+    unsigned long cr0;
+    asm volatile ("movq %%cr0, %0" : "=r"(cr0));
+    return cr0;
 }
 
-__always_inline static void native_read_cr2(unsigned long *cr2)
+__always_inline static unsigned long read_cr2(void)
 {
-    asm volatile (
-        "movq %%cr2, %%rax\n\t"
-        "movq %%rax, %0"
-        : "=m"(*cr2)
-        :
-        : "rax", "memory"
-    );
+    unsigned long cr2;
+    asm volatile ("movq %%cr2, %0" : "=r"(cr2));
+    return cr2;
 }
 
-__always_inline static void native_read_cr3(unsigned long *cr3)
+__always_inline static unsigned long read_cr3(void)
 {
-    asm volatile (
-        "movq %%cr3, %%rax\n\t"
-        "movq %%rax, %0"
-        : "=m"(*cr3)
-        :
-        : "rax", "memory"
-    );
+    unsigned long cr3;
+    asm volatile ("movq %%cr3, %0" : "=r"(cr3));
+    return cr3;
 }
 
-__always_inline static void native_read_cr4(unsigned long *cr4)
+__always_inline static unsigned long read_cr4(void)
 {
-    asm volatile (
-        "movq %%cr4, %%rax\n\t"
-        "movq %%rax, %0"
-        : "=m"(*cr4)
-        :
-        : "rax", "memory"
-    );
+    unsigned long cr4;
+    asm volatile ("movq %%cr4, %0" : "=r"(cr4));
+    return cr4;
 }
 
-__always_inline static void native_read_cr8(unsigned long *cr8)
+__always_inline static unsigned long read_cr8(void)
 {
-    asm volatile (
-        "movq %%cr8, %%rax\n\t"
-        "movq %%rax, %0"
-        : "=m"(*cr8)
-        :
-        : "rax", "memory"
-    );
+    unsigned long cr8;
+    asm volatile ("movq %%cr8, %0" : "=r"(cr8));
+    return cr8;
 }
 
-extern void dump_context(const struct regs *regs);
+__always_inline static void write_cr0(unsigned long cr0)
+{
+    asm volatile ("movq %0, %%cr0" : : "r"(cr0));
+}
+
+__always_inline static void write_cr2(unsigned long cr2)
+{
+    asm volatile ("movq %0, %%cr2" : : "r"(cr2));
+}
+
+__always_inline static void write_cr3(unsigned long cr3)
+{
+    asm volatile ("movq %0, %%cr3" : : "r"(cr3));
+}
+
+__always_inline static void write_cr4(unsigned long cr4)
+{
+    asm volatile ("movq %0, %%cr4" : : "r"(cr4));
+}
+
+__always_inline static void write_cr8(unsigned long cr8)
+{
+    asm volatile ("movq %0, %%cr8" : : "r"(cr8));
+}
+
+extern void context_dump(const struct regs *regs);
 
 #endif // ASM_X86_REGS_H

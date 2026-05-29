@@ -19,7 +19,6 @@ __noreturn void vpanic(const char *fmt, va_list args)
 
     if (panic_in_progress)
     {
-        // May not even print.
         pr_emerg("Recursive kernel panic!!\n");
         pr_emerg("Halting execution.\n");
         goto hcf;
@@ -28,14 +27,14 @@ __noreturn void vpanic(const char *fmt, va_list args)
     panic_in_progress = true;
 
     struct regs regs;
-    save_regs(&regs);
+    context_save(&regs);
    
     pr_emerg("Kernel panic!\n");
     pr_emerg("Reason: ");
     vkprintf(fmt, args);
     kprintf("\n");
 
-    dump_context(&regs);
+    context_dump(&regs);
 
     pr_emerg("Halting execution.\n");
    

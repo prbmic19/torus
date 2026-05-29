@@ -3,7 +3,6 @@
 #include <torus/compiler.h>
 #include <kernel/timer.h>
 #include <kernel/irq.h>
-#include <kernel/panic.h>
 
 __noreturn void kmain(void)
 {

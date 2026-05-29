@@ -15,7 +15,7 @@ static bool is_valid_stack(unsigned long rsp)
     return rsp >= stack_bottom && rsp < stack_top && (rsp & 0x7) == 0;
 }
 
-void dump_context(const struct regs *regs)
+void context_dump(const struct regs *regs)
 {
     kprintf("Context:\n");
 
@@ -41,34 +41,18 @@ void dump_context(const struct regs *regs)
     kprintf("  rflags: 0x%lx\n", regs->rflags);
 
     // Muehehe... read the control registers here.
-    unsigned long cr;
-    
-    native_read_cr0(&cr);
-    kprintf("  cr0: 0x%lx\n", cr);
-
-    native_read_cr2(&cr);
-    kprintf("  cr2: 0x%lx\n", cr);
-
-    native_read_cr3(&cr);
-    kprintf("  cr3: 0x%lx\n", cr);
-
-    native_read_cr4(&cr);
-    kprintf("  cr4: 0x%lx\n", cr);
-
-    native_read_cr8(&cr);
-    kprintf("  cr8: 0x%lx\n", cr);
+    kprintf("  cr0: 0x%lx\n", read_cr0());
+    kprintf("  cr2: 0x%lx\n", read_cr2());
+    kprintf("  cr3: 0x%lx\n", read_cr3());
+    kprintf("  cr4: 0x%lx\n", read_cr4());
+    kprintf("  cr8: 0x%lx\n", read_cr8());
 
     // Dump backtrace.
-    kprintf(  "Backtrace:\n");
+    kprintf("  Backtrace:\n");
     unsigned long rbp = regs->rbp;
-    for (int i = 0; i < 64; i++)
+    for (int i = 0; is_valid_stack(rbp); i++)
     {
-        if (!is_valid_stack(rbp))
-        {
-            break;
-        }
-
-        kprintf("  #%d: 0x%lx\n", i, *(unsigned long *)(rbp + 8));
+        kprintf("    #%d: 0x%lx\n", i, *(unsigned long *)(rbp + 8));
         rbp = *(unsigned long *)rbp;
     }
 }
