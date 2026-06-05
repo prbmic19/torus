@@ -4,7 +4,7 @@
 
 .intel_syntax noprefix
 
-.section .text, "ax", @progbits
+.section .text.real, "ax", @progbits
 
 .code16
 
@@ -20,6 +20,8 @@ FUNC_BEGIN(enter_protected_mode)
     jmp    0x18, pm_entry
 FUNC_END(enter_protected_mode)
 
+.section .text, "ax", @progbits
+
 .code32
 
 FUNC_BEGIN_LOCAL(pm_entry)
@@ -32,17 +34,9 @@ FUNC_BEGIN_LOCAL(pm_entry)
     mov    fs, ax
     mov    gs, ax
 
-    lea    esp, [stack_top]
-    and    esp, -16
+    lea    esp, [__stack_top]
+    and    esp, -8
     mov    ebp, esp
-
-    /* Remove stale values from real mode. */
-    xor    eax, eax
-    xor    ecx, ecx
-    xor    edx, edx
-    xor    ebx, ebx
-    xor    esi, esi
-    xor    edi, edi
 
     cld
 

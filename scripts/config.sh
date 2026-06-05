@@ -30,11 +30,15 @@ config_schema_init() {
 
     CONFIG_DEFAULTS[DEBUG_SYMS]="n"
     CONFIG_TYPES[DEBUG_SYMS]="bool"
-    CONFIG_PROMPTS[DEBUG_SYMS]="Include debug symbols"
+    CONFIG_PROMPTS[DEBUG_SYMS]="Build with debug symbols"
 
-    CONFIG_DEFAULTS[KERNEL_CMDLINE]=""
-    CONFIG_TYPES[KERNEL_CMDLINE]="string"
-    CONFIG_PROMPTS[KERNEL_CMDLINE]="Kernel command line"
+    CONFIG_DEFAULTS[CMDLINE]=""
+    CONFIG_TYPES[CMDLINE]="string"
+    CONFIG_PROMPTS[CMDLINE]="Command line"
+
+    CONFIG_DEFAULTS[CMDLINE_SIZE]="1024"
+    CONFIG_TYPES[CMDLINE_SIZE]="int"
+    CONFIG_PROMPTS[CMDLINE_SIZE]="Maximum command line size"
 }
 
 config_load() {
@@ -126,6 +130,10 @@ config_prompt() {
         fi
 
         if validate_input "$var" "$input"; then
+            if [[ "$var" == "CMDLINE" && "$input" == "--" ]]; then
+                input=""
+            fi
+
             CURRENT_VALUES[$var]="$input"
             echo ""
             break
@@ -168,8 +176,6 @@ EOF
         fi
         echo "${var} = ${value}" >> "$CONFIG_FILE"
     done
-
-    echo "export ${!CONFIG_TYPES[@]}" >> "$CONFIG_FILE"
 
     rel_config_file=$(realpath --relative-to="$TOPDIR" "$CONFIG_FILE")
     echo "Configuration saved to $rel_config_file"

@@ -21,7 +21,7 @@ BUILD_DIR="$ARCH_DIR/build"
 IMG="$ARCH_DIR/torus.img"
 
 read_size_from_bin() {
-    # Read 4 bytes at offset 6 (skip magic).
+    # Read 4 bytes at offset 6 (skip signature).
     od -An -tu4 -j6 -N4 "$1" | tr -d ' '
 }
 

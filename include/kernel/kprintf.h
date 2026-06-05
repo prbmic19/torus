@@ -6,12 +6,13 @@
 #include <torus/compiler.h>
 #include <stdarg.h>
 
-#define PL_EMERG  "[EMERG] "
-#define PL_ERR    "[ERR] "
-#define PL_WARN   "[WARN] "
-#define PL_NOTICE "[NOTICE] "
-#define PL_INFO   "[INFO] "
-#define PL_DEBUG  "[DEBUG] "
+#define PL_EMERG  "\0010"
+// 1 and 2 are reserved.
+#define PL_ERR    "\0013"
+#define PL_WARN   "\0014"
+#define PL_NOTICE "\0015"
+#define PL_INFO   "\0016"
+#define PL_DEBUG  "\0017"
 
 #define pr_emerg(fmt, ...)  kprintf(PL_EMERG fmt, ##__VA_ARGS__)
 #define pr_err(fmt, ...)    kprintf(PL_ERR fmt, ##__VA_ARGS__)

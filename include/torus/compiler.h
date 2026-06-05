@@ -1,5 +1,5 @@
 #ifndef TORUS_COMPILER_H
-#define TORUS_COMPILER_H 1
+#define TORUS_COMPILER_H
 
 #define __always_inline inline __attribute__((__always_inline__))
 #define __noinline      __attribute__((__noinline__))

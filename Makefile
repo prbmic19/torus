@@ -42,22 +42,18 @@ IMG := $(ARCH_DIR)/torus.img
 
 ## Flags.
 
-# DR stands for debug/release.
-# DEBUG_BUILD overrides OPT and DEBUG_SYMS.
 ifeq ($(DEBUG_BUILD),y)
 DR_CFLAGS = -ggdb -g3 -O2
 else
 DR_CFLAGS = -O$(OPT)
 ifeq ($(DEBUG_SYMS),y)
 DR_CFLAGS += -ggdb -g3
-else
-DR_CFLAGS += -s
 endif
 endif
 
 # Common flags.
 CFLAGS = -ffreestanding -fno-pic -fno-pie -fno-stack-protector -fno-strict-aliasing \
-	-fno-builtin -fno-omit-frame-pointer -Wall -Wextra -Werror -Wshadow -Wundef \
+	-fno-common -fwrapv -fno-builtin -fno-omit-frame-pointer -Wall -Wextra -Werror -Wshadow -Wundef \
 	-Wimplicit-fallthrough -Wstrict-prototypes -I$(TOPDIR)/include -std=gnu11 $(DR_CFLAGS) -MMD -MP
 ASFLAGS = -I$(TOPDIR)/include -I$(ARCH_DIR)/include $(DR_CFLAGS) -MMD -MP
 
@@ -66,6 +62,8 @@ ASFLAGS = -I$(TOPDIR)/include -I$(ARCH_DIR)/include $(DR_CFLAGS) -MMD -MP
 CSRCS  :=
 ASSRCS :=
 include kernel/sources.mk
+include drivers/sources.mk
+include lib/sources.mk
 -include $(ARCH_DIR)/sources.mk
 
 ## Object files.

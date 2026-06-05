@@ -6,31 +6,34 @@
 #include <torus/compiler.h>
 #include <torus/types.h>
 
-#define MAX_E820_ENTRIES 256
+#define E820_MAX_ENTRIES 128
+
+#define E820_TYPE_USABLE   1
+#define E820_TYPE_RESERVED 2
+#define E820_TYPE_ACPI     3
+#define E820_TYPE_NVS      4
+#define E820_TYPE_UNUSABLE 5
+
+#define TPRTCL_SUPPORTED_VERSION 1
 
 struct e820_entry
 {
     u64 base;
-    u64 length;
+    u64 len;
     u32 type;
-    u32 ext_attr;
 } __packed;
 
 struct boot_info
 {
-    u8 signature[4];
-    u8 e820_entry_count;
-    u8 disk_drive_count;
-    u16 base_mem_size;
-    u32 timer_ticks;
-    u8 kbd_flags;
-    u8 video_mode;
-    u16 video_cols;
-    u16 com_ports[4];
-    u16 lpt_ports[3];
-    u32 ebda_addr;
-    u32 rsd_ptr;
-    struct e820_entry e820_entries[MAX_E820_ENTRIES];
+    char signature[4];
+    u32 boot_protocol_version;
+    u8 _pad[4];
+    u32 e820_entry_count;
+    // These are all physical pointers.
+    u64 e820_map_addr;
+    u64 rsdp_addr;
+    u64 fb_info_addr;
+    u64 cmdline_addr;
 } __packed;
 
 #endif // ASM_X86_BOOT_INFO_H

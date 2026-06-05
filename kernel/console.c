@@ -1,7 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <torus/compiler.h>
 #include <kernel/console.h>
 #include <kernel/kprintf.h>
+#include <kernel/panic.h>
 
 static struct console *current_console;
 
@@ -29,6 +31,12 @@ void console_putchar(int ch)
 
 void console_puts(const char *str)
 {
+    // For now, let's manually panic() for NULL pointers.
+    if (unlikely(!str))
+    {
+        panic("NULL pointer.");
+    }
+
     while (*str)
     {
         console_putchar(*str++);

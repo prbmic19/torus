@@ -4,14 +4,28 @@
 #include <torus/types.h>
 #include <kernel/kprintf.h>
 #include <kernel/console.h>
+#include <kernel/panic.h>
+#include <lib/string.h>
+#include <lib/cmdline.h>
 #include <stdarg.h>
+
+const char *const log_prefixes[8] = {
+    "[EMERG ] ",
+    "[(rsvd)] ",
+    "[(rsvd)]",
+    "[ERR   ] ",
+    "[WARN  ] ",
+    "[NOTICE] ",
+    "[INFO  ] ",
+    "[DEBUG ] "
+};
 
 static void print_num_int(unsigned int num, unsigned int base, bool is_signed)
 {
     char buf[256] = {0};
     int i = 0;
 
-    if (num == 0)
+    if (!num)
     {
         console_putchar('0');
         return;
@@ -88,7 +102,32 @@ static void print_num_long(unsigned long num, unsigned long base, bool is_signed
 
 __printf(1, 0) int vkprintf(const char *fmt, va_list args)
 {
+    extern const char saved_command_line[1024];
+    int log_level = -1;
     int i = 0;
+
+    // For now, let's manually panic() for NULL pointers.
+    if (unlikely(!fmt))
+    {
+        panic("vkprintf: NULL pointer.");
+    }
+
+    // Suppress debug logs unless the "debug" command-line option is present.
+    if (strncmp(fmt, PL_DEBUG, 2) == 0 && !cmdline_find_option_bool(saved_command_line, "debug"))
+    {
+        return 0;
+    }
+
+    if (fmt[0] == '\1' && fmt[1] >= '0' && fmt[1] <= '7')
+    {
+        log_level = fmt[1] - '0';
+        i += 2;
+    }
+
+    if (log_level != -1)
+    {
+        console_puts(log_prefixes[log_level]);
+    }
 
     while (fmt[i])
     {

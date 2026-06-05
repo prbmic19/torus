@@ -12,7 +12,7 @@
 #define KERNEL_OFFSET  0x0000
 
 /* Header layout for stage2 and kernel. */
-#define IMAGE_MAGIC_OFFSET 0
+#define IMAGE_SIGNATURE_OFFSET 0
 #define IMAGE_SIZE_OFFSET  6
 #define IMAGE_ENTRY_OFFSET 10
 
@@ -91,8 +91,8 @@ boot:
 
     /* Do we have a valid stage 2? */
     mov    cx, 6
-    lea    di, [STAGE2_OFFSET + IMAGE_MAGIC_OFFSET]
-    lea    si, [stage2_magic]
+    lea    di, [STAGE2_OFFSET + IMAGE_SIGNATURE_OFFSET]
+    lea    si, [stage2_signature]
     repe cmpsb
     jne    1f
 
@@ -217,7 +217,7 @@ err_no_stage2:
 buf_hex_out:
     .asciz "0x0000"
 
-stage2_magic:
+stage2_signature:
     .ascii "STAGE2"
 
 dap_stage2_1:

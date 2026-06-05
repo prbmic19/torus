@@ -5,7 +5,7 @@
 
 #include <torus/compiler.h>
 
-// Must define arch_local_irq_enable(), arch_local_irq_disable(), arch_native_safe_halt(), and arch_native_halt().
+// Must define arch_local_irq_enable(), arch_local_irq_disable(), arch_cpu_safe_halt(), arch_cpu_halt(), and arch_cpu_hcf().
 #include <asm/irq.h>
 // Must define struct regs.
 #include <asm/regs.h>
@@ -23,14 +23,14 @@ __always_inline static void local_irq_disable(void)
     arch_local_irq_disable();
 }
 
-__always_inline static void native_safe_halt(void)
+__always_inline static void cpu_safe_halt(void)
 {
-    arch_native_safe_halt();
+    arch_cpu_safe_halt();
 }
 
-__always_inline static void native_halt(void)
+__always_inline static void cpu_halt(void)
 {
-    arch_native_halt();
+    arch_cpu_halt();
 }
 
 typedef void (*irq_handler_t)(struct regs *regs);

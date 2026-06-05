@@ -1,5 +1,5 @@
 #ifndef TORUS_TYPES_H
-#define TORUS_TYPES_H 1
+#define TORUS_TYPES_H
 
 #include <stdint.h>
 #include <stddef.h>

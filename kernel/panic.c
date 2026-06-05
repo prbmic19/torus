@@ -6,7 +6,7 @@
 #include <kernel/kprintf.h>
 #include <kernel/irq.h>
 
-// Must define struct regs, save_regs(), and dump_context().
+// Must define struct regs, context_save(), and context_dump().
 #include <asm/regs.h>
 
 #include <stdarg.h>
@@ -21,6 +21,7 @@ __noreturn void vpanic(const char *fmt, va_list args)
     {
         pr_emerg("Recursive kernel panic!!\n");
         pr_emerg("Halting execution.\n");
+
         goto hcf;
     }
 
@@ -30,19 +31,19 @@ __noreturn void vpanic(const char *fmt, va_list args)
     context_save(&regs);
    
     pr_emerg("Kernel panic!\n");
-    pr_emerg("Reason: ");
+    pr_emerg("Message: ");
     vkprintf(fmt, args);
     kprintf("\n");
 
     context_dump(&regs);
 
     pr_emerg("Halting execution.\n");
-   
+
 hcf:
 
     while (1)
     {
-        native_halt();
+        cpu_halt();
     }
 }
 

@@ -15,12 +15,12 @@ __always_inline static void arch_local_irq_disable(void)
     asm volatile ("cli" : : : "memory");
 }
 
-__always_inline static void arch_native_safe_halt(void)
+__always_inline static void arch_cpu_safe_halt(void)
 {
     asm volatile ("sti; hlt" : : : "memory");
 }
 
-__always_inline static void arch_native_halt(void)
+__always_inline static void arch_cpu_halt(void)
 {
     asm volatile ("hlt" : : : "memory");
 }

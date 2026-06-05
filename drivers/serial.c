@@ -3,33 +3,16 @@
 #include <drivers/serial.h>
 #include <torus/types.h>
 #include <asm/io.h>
-#include <asm/boot_info.h>
 
-static u16 serial_port;
+static const u16 serial_port = 0x3f8;
 
 static bool serial_ready(void)
 {
     return inb(serial_port + 5) & 0x20;
 }
 
-bool serial_init(const struct boot_info *boot_info)
+void serial_init(void)
 {
-    // Find the first available serial port.
-    for (size_t i = 0; i < sizeof(boot_info->com_ports); i++)
-    {
-        if (boot_info->com_ports[i] != 0)
-        {
-            serial_port = boot_info->com_ports[i];
-            break;
-        }
-    }
-
-    // There were none?
-    if (serial_port == 0)
-    {
-        return false;
-    }
-
     outb(serial_port + 1, 0x00);
     outb(serial_port + 3, 0x80);
     outb(serial_port + 0, 0x03);
@@ -37,8 +20,6 @@ bool serial_init(const struct boot_info *boot_info)
     outb(serial_port + 3, 0x03);
     outb(serial_port + 2, 0xc7);
     outb(serial_port + 4, 0x0b);
-
-    return true;
 }
 
 void serial_putchar(int ch)

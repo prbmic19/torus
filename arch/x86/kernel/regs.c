@@ -17,42 +17,44 @@ static bool is_valid_stack(unsigned long rsp)
 
 void context_dump(const struct regs *regs)
 {
-    kprintf("Context:\n");
+    // This is really only used when the system has died. pr_emerg() seems appropriate.
+
+    pr_emerg("Context:\n");
 
     // Dump GPRs.
-    kprintf("  rax: 0x%lx\n", regs->rax);
-    kprintf("  rbx: 0x%lx\n", regs->rbx);
-    kprintf("  rcx: 0x%lx\n", regs->rcx);
-    kprintf("  rdx: 0x%lx\n", regs->rcx);
-    kprintf("  rsi: 0x%lx\n", regs->rsi);
-    kprintf("  rdi: 0x%lx\n", regs->rdi);
-    kprintf("  rbp: 0x%lx\n", regs->rbp);
-    kprintf("  rsp: 0x%lx\n", regs->rsp);
-    kprintf("   r8: 0x%lx\n", regs->r8);
-    kprintf("   r9: 0x%lx\n", regs->r9);
-    kprintf("  r10: 0x%lx\n", regs->r10);
-    kprintf("  r11: 0x%lx\n", regs->r11);
-    kprintf("  r12: 0x%lx\n", regs->r12);
-    kprintf("  r13: 0x%lx\n", regs->r13);
-    kprintf("  r14: 0x%lx\n", regs->r14);
-    kprintf("  r15: 0x%lx\n", regs->r15);
+    pr_emerg("    rax: 0x%lx\n", regs->rax);
+    pr_emerg("    rbx: 0x%lx\n", regs->rbx);
+    pr_emerg("    rcx: 0x%lx\n", regs->rcx);
+    pr_emerg("    rdx: 0x%lx\n", regs->rcx);
+    pr_emerg("    rsi: 0x%lx\n", regs->rsi);
+    pr_emerg("    rdi: 0x%lx\n", regs->rdi);
+    pr_emerg("    rbp: 0x%lx\n", regs->rbp);
+    pr_emerg("    rsp: 0x%lx\n", regs->rsp);
+    pr_emerg("     r8: 0x%lx\n", regs->r8);
+    pr_emerg("     r9: 0x%lx\n", regs->r9);
+    pr_emerg("    r10: 0x%lx\n", regs->r10);
+    pr_emerg("    r11: 0x%lx\n", regs->r11);
+    pr_emerg("    r12: 0x%lx\n", regs->r12);
+    pr_emerg("    r13: 0x%lx\n", regs->r13);
+    pr_emerg("    r14: 0x%lx\n", regs->r14);
+    pr_emerg("    r15: 0x%lx\n", regs->r15);
 
-    kprintf("  rip: 0x%lx\n", regs->rip);
-    kprintf("  rflags: 0x%lx\n", regs->rflags);
+    pr_emerg("    rip: 0x%lx\n", regs->rip);
+    pr_emerg("    rflags: 0x%lx\n", regs->rflags);
 
     // Muehehe... read the control registers here.
-    kprintf("  cr0: 0x%lx\n", read_cr0());
-    kprintf("  cr2: 0x%lx\n", read_cr2());
-    kprintf("  cr3: 0x%lx\n", read_cr3());
-    kprintf("  cr4: 0x%lx\n", read_cr4());
-    kprintf("  cr8: 0x%lx\n", read_cr8());
+    pr_emerg("    cr0: 0x%lx\n", read_cr0());
+    pr_emerg("    cr2: 0x%lx\n", read_cr2());
+    pr_emerg("    cr3: 0x%lx\n", read_cr3());
+    pr_emerg("    cr4: 0x%lx\n", read_cr4());
+    pr_emerg("    cr8: 0x%lx\n", read_cr8());
 
     // Dump backtrace.
-    kprintf("  Backtrace:\n");
+    pr_emerg("    Backtrace:\n");
     unsigned long rbp = regs->rbp;
     for (int i = 0; is_valid_stack(rbp); i++)
     {
-        kprintf("    #%d: 0x%lx\n", i, *(unsigned long *)(rbp + 8));
+        pr_emerg("        #%d: 0x%lx\n", i, *(unsigned long *)(rbp + 8));
         rbp = *(unsigned long *)rbp;
     }
 }

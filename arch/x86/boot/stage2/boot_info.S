@@ -3,58 +3,87 @@
 #include <asm_generic/linkage.h>
 
 /* 
- * Gather all information we can while we have access to the BIOS.
- * Store it somewhere low and safe, at 0x680.
+ * Get boot information while we have access to the BIOS.
+ * Then get the kernel command line. Hardcode it for now.
  */
-
-#define BOOT_INFO_ADDR  0x680
 
 /*
- * Layout of the boot_info structure:
+ * Layout of the boot info structure:
  *  Offset      Size (B)    Description
  *  0x00        4           Signature "INFO"
- *  0x04        1           E820 entry count
- *  0x05        1           Disk drive count
- *  0x06        2           Base memory size (KiB)
- *  0x08        4           Timer ticks
- *  0x0c        1           Keyboard flags
- *  0x0d        1           Video mode
- *  0x0e        2           Video columns
- *  0x10        8           COM port addresses, (2 bytes * 4)
- *  0x18        6           LPT port addresses, (2 bytes * 3)
- *  0x1e        4           EBDA physical address
- *  0x22        4           RSD pointer (ACPI)
- *  0x26        6144        E820 entries (24 bytes * 256)
+ *  0x04        4           Implemented Torus boot protocol version
+ *  0x08        4           Padding
+ *  0x0c        4           E820 map entry count
+ *  0x10        8           E820 map pointer
+ *  0x18        8           RSD pointer
+ *  0x20        8           Framebuffer info pointer
+ *  0x28        8           Kernel command line pointer
  */
 
-/* Offsets of fields in the boot_info structure */
-#define BI_SIGNATURE    0x00
-#define BI_E820_ENT_CNT 0x04
-#define BI_DISK_CNT     0x05
-#define BI_BASE_MEM_SZ  0x06
-#define BI_TIMER_TICKS  0x08
-#define BI_KBD_FLAGS    0x0c
-#define BI_VIDEO_MODE   0x0d
-#define BI_VIDEO_COLS   0x0e
-#define BI_COM_PORTS    0x10
-#define BI_LPT_PORTS    0x18
-#define BI_EBDA         0x1e
-#define BI_RSDP         0x22
-#define BI_E820_START   0x26
+#define BI_SIGNATURE   0x00
+#define BI_BOOTPRTCL   0x04
+#define BI_E820_COUNT  0x0c
+#define BI_E820_PTR    0x10
+#define BI_RSDP        0x18
+#define BI_FB_INFO_PTR 0x20
+#define BI_CMDLINE_PTR 0x28
 
-/* Offsets of fields in an E820 entry */
-#define E820_BASE_LOW   0x00 
-#define E820_BASE_HIGH  0x04
-#define E820_LEN_LOW    0x08
-#define E820_LEN_HIGH   0x0c
-#define E820_TYPE       0x10
-#define E820_ACPI       0x14
+#define BOOT_INFO_SIZE 48
+
+/*
+ * Layout of an E820 entry:
+ *  Offset      Size (B)    Description
+ *  0x00        8           Base address
+ *  0x08        8           Length
+ *  0x10        4           Type
+ */
+
+#define E820_BASE     0x00
+#define E820_LEN      0x08
+#define E820_TYPE     0x10
+
+#define E820_MAX_ENTRIES  128
+#define E820_MAX_SIZE     (E820_MAX_ENTRIES * 24)
+
+/*
+ * Layout of the framebuffer info structure:
+ *  Offset      Size (B)    Description
+ *  0x00        8           Address
+ *  0x08        4           Pitch
+ *  0x0c        4           Width
+ *  0x10        4           Height
+ *  0x14        4           Bits per pixel
+ *  0x18        4           Red size
+ *  0x1c        4           Red shift
+ *  0x20        4           Green size
+ *  0x24        4           Green shift
+ *  0x28        4           Blue size
+ *  0x2c        4           Blue shift
+ *  0x30        4           Reserved size
+ *  0x34        4           Reserved shift
+ */
+
+#define FB_ADDR        0x00
+#define FB_PITCH       0x08
+#define FB_WIDTH       0x0c
+#define FB_HEIGHT      0x10
+#define FB_BPP         0x14
+#define FB_RED_SIZE    0x18
+#define FB_RED_SHIFT   0x1c
+#define FB_GREEN_SIZE  0x20
+#define FB_GREEN_SHIFT 0x24
+#define FB_BLUE_SIZE   0x28
+#define FB_BLUE_SHIFT  0x2c
+#define FB_RSVD_SIZE   0x30
+#define FB_RSVD_SHIFT  0x34
+
+#define FB_INFO_SIZE 52
 
 .intel_syntax noprefix
 
 .section .stage2.start, "a", @progbits
 SYM_BEGIN_LOCAL_U(stage2_start)
-    .ascii "STAGE2"                 /* Magic */
+    .ascii "STAGE2"                 /* Signature */
     .long stage2_end - stage2_start /* Size */
     .word  stage2_entry             /* Pad entry point to 8 bytes. */
     .word  0
@@ -69,8 +98,8 @@ SYM_BEGIN_LOCAL_U(stage2_end)
 .section .text.entry, "ax", @progbits
 
 FUNC_BEGIN(stage2_entry)
-    lea    sp, [stack_top]
-    and    sp, -16
+    lea    sp, [__stack_top]
+    and    sp, -8
 
     cld
 
@@ -85,7 +114,12 @@ FUNC_BEGIN(stage2_entry)
     call   verify_cpuid
     call   verify_long
 
-    call   gather_boot_info
+    call   get_boot_info
+
+    /* Store the pointer to our boot_info strucuture. */
+    xor    edi, edi
+    lea    di, [boot_info]
+    mov    [boot_info_ptr], edi
 
     call   enter_protected_mode
 FUNC_END(stage2_entry)
@@ -153,50 +187,41 @@ FUNC_BEGIN_LOCAL(verify_long)
     jmp    1b
 FUNC_END(verify_long)
 
-FUNC_BEGIN_LOCAL(gather_boot_info)
+FUNC_BEGIN_LOCAL(get_boot_info)
     pusha
 
     /* Write the signature "INFO". */
-    mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 0], 'I'
-    mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 1], 'N'
-    mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 2], 'F'
-    mov    byte ptr [BOOT_INFO_ADDR + BI_SIGNATURE + 3], 'O'
+    mov    byte ptr [boot_info + BI_SIGNATURE + 0], 'I'
+    mov    byte ptr [boot_info + BI_SIGNATURE + 1], 'N'
+    mov    byte ptr [boot_info + BI_SIGNATURE + 2], 'F'
+    mov    byte ptr [boot_info + BI_SIGNATURE + 3], 'O'
 
-    lea    di, [BOOT_INFO_ADDR + 4]
-    mov    cx, 0x2000
-    xor    ax, ax
-    rep stosb
+    mov    dword ptr [boot_info + BI_BOOTPRTCL], 1
 
-    /* Gather all the information. */
+    /* Pass the command line. */
+    xor    eax, eax
+    lea    ax, [cmdline]
+    mov    [boot_info + BI_CMDLINE_PTR], eax
+
     call   get_e820_map
-    call   get_disk_info
-    call   get_mem_info_bda
-    call   get_timer_ticks
-    call   get_keyboard_flags
-    call   get_video_info
-    call   get_ports
-    call   get_ebda
     call   get_rsdp
+    call   get_fb
 
     popa
     ret
-FUNC_END(gather_boot_info)
+FUNC_END(get_boot_info)
 
-/* 
- * E820 memory map. 
- * Presently doesn't check if the loop went over 256 entries.
- */
+/* E820 memory map. */
 FUNC_BEGIN_LOCAL(get_e820_map)
     pusha
 
-    lea    di, [BOOT_INFO_ADDR + BI_E820_START]
+    lea    di, [e820_map]
     xor    ebx, ebx
     mov    edx, 0x534d4150  /* "SMAP" */
-    xor    bp, bp           /* Use this as our entry count. */
+    xor    ebp, ebp         /* Use this as our entry count. */
 
     mov    eax, 0xe820
-    mov    ecx, 24
-    mov    dword ptr es:[di + 20], 1
+    mov    ecx, 20
     int    0x15
     jc     4f
 
@@ -206,159 +231,173 @@ FUNC_BEGIN_LOCAL(get_e820_map)
     jmp    2f
 
 1:  mov    eax, 0xe820
-    mov    ecx, 24
-    mov    dword ptr es:[di + 20], 1
+    mov    ecx, 20
     int    0x15
     jc     3f
 
-2:  inc    bp
-    add    di, 24
+2:  inc    ebp
+    cmp    ebp, E820_MAX_ENTRIES
+    je     5f
+    add    di, 20
     test   ebx, ebx
     jnz    1b
 
-3:  mov    ax, bp
-    mov    [BOOT_INFO_ADDR + BI_E820_ENT_CNT], al
+3:  mov    [boot_info + BI_E820_COUNT], ebp
     jmp    5f
 
-4:  mov    byte ptr [BOOT_INFO_ADDR + BI_E820_ENT_CNT], 0
+4:  mov    dword ptr [boot_info + BI_E820_COUNT], 0
 
-5:  popa
+5:  xor    eax, eax
+    lea    ax, [e820_map]
+    mov    [boot_info + BI_E820_PTR], eax
+    popa
     ret
 FUNC_END(get_e820_map)
 
-/* Disk drive count. */
-FUNC_BEGIN_LOCAL(get_disk_info)
+/* Framebuffer info. */
+FUNC_BEGIN_LOCAL(get_fb)
     pusha
+    push   fs
 
-    mov    ah, 0x08
-    mov    dl, [0x600]  /* Get boot drive. */
-    int    0x13
-    
-    jc     1f
-    test   ah, ah
-    jnz    1f
+    lea    di, [vbe_info]
 
-    and    dl, 0x3f     /* Get maximum drive number. */
-    inc    dl
-    mov    [BOOT_INFO_ADDR + BI_DISK_CNT], dl
-    jmp    2f
+    mov    byte ptr [di + 0], 'V'
+    mov    byte ptr [di + 1], 'B'
+    mov    byte ptr [di + 2], 'E'
+    mov    byte ptr [di + 3], '2'
 
-1:  mov    byte ptr [BOOT_INFO_ADDR + BI_DISK_CNT], 0
+    mov    ax, 0x4f00
+    int    0x10
 
-2:  popa
-    ret
-FUNC_END(get_disk_info)
+    cmp    ax, 0x004f
+    jne    4f
 
-/* Conventional memory size. */
-FUNC_BEGIN_LOCAL(get_mem_info_bda)
-    pusha
-    int    0x12
-    mov    [BOOT_INFO_ADDR + BI_BASE_MEM_SZ], ax
+    /* Mode list pointer. */
+    mov    bx, [vbe_info + 0x0e]
+    mov    ax, [vbe_info + 0x10]
+    mov    fs, ax
+
+1:  mov    cx, fs:[bx]
+
+    cmp    cx, 0xffff
+    je     4f
+
+    /* Get mode information. */
+
+    lea    di, [vbe_mode_info]
+
+    mov    ax, 0x4f01
+    int    0x10
+
+    cmp    ax, 0x004f
+    jne    3f
+
+    /* Is it a supported and linear framebuffer? */
+    test   word ptr [vbe_mode_info + 0x00], (1 << 0) | (1 << 7)
+    jz     3f
+
+    /* Is the resolution 1024x768x32? */
+
+    cmp    word ptr [vbe_mode_info + 0x12], 1024
+    jne    3f
+    cmp    word ptr [vbe_mode_info + 0x14], 768
+    jne    3f
+    cmp    byte ptr [vbe_mode_info + 0x19], 32
+    jne    3f
+
+    mov    ax, 0x4f02
+    mov    bx, cx
+    or     bx, 1 << 14 /* Linear framebuffer. */
+    int    0x10
+
+    cmp    ax, 0x004f
+    jne    2f
+
+    mov    eax, [vbe_mode_info + 0x28]
+    mov    [fb_info + FB_ADDR], eax
+
+    movzx  eax, word ptr [vbe_mode_info + 0x10]
+    mov    [fb_info + FB_PITCH], eax
+
+    movzx  eax, word ptr [vbe_mode_info + 0x12]
+    mov    [fb_info + FB_WIDTH], eax
+
+    movzx  eax, word ptr [vbe_mode_info + 0x14]
+    mov    [fb_info + FB_HEIGHT], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x19]
+    mov    [fb_info + FB_BPP], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x1f]
+    mov    [fb_info + FB_RED_SIZE], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x20]
+    mov    [fb_info + FB_RED_SHIFT], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x21]
+    mov    [fb_info + FB_GREEN_SIZE], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x22]
+    mov    [fb_info + FB_GREEN_SHIFT], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x23]
+    mov    [fb_info + FB_BLUE_SIZE], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x24]
+    mov    [fb_info + FB_BLUE_SHIFT], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x25]
+    mov    [fb_info + FB_RSVD_SIZE], eax
+
+    movzx  eax, byte ptr [vbe_mode_info + 0x26]
+    mov    [fb_info + FB_RSVD_SHIFT], eax
+
+    xor    eax, eax
+    lea    ax, [fb_info]
+    mov    [boot_info + BI_FB_INFO_PTR], eax
+
+2:  jmp    4f
+
+3:  add    bx, 2
+    jmp    1b
+
+4:  pop    fs
     popa
     ret
-FUNC_END(get_mem_info_bda)
+FUNC_END(get_fb)
 
-/* Timer ticks. */
-FUNC_BEGIN_LOCAL(get_timer_ticks)
-    push   ax
-    mov    eax, [0x46c]
-    mov    [BOOT_INFO_ADDR + BI_TIMER_TICKS], eax
-    pop    ax
-    ret
-FUNC_END(get_timer_ticks)
-
-/* Keyboard flags. */
-FUNC_BEGIN_LOCAL(get_keyboard_flags)
-    push   ax
-    mov    al, [0x417]
-    mov    [BOOT_INFO_ADDR + BI_KBD_FLAGS], al
-    pop    ax
-    ret
-FUNC_END(get_keyboard_flags)
-
-/* Video information. */
-FUNC_BEGIN_LOCAL(get_video_info)
-    push   ax
-
-    mov    al, [0x449]  /* Current video mode */
-    mov    [BOOT_INFO_ADDR + BI_VIDEO_MODE], al
-
-    mov    ax, [0x44a]  /* Number of columns */
-    mov    [BOOT_INFO_ADDR + BI_VIDEO_COLS], ax
-
-    pop    ax
-    ret
-FUNC_END(get_video_info)
-
-/* COM and LPT port addresses. */
-FUNC_BEGIN_LOCAL(get_ports)
-    pusha
-
-    lea    si, [0x400]
-    lea    di, [BOOT_INFO_ADDR + BI_COM_PORTS]
-    mov    cx, 4
-1:  mov    ax, [si]
-    stosw
-    add    si, 2
-    loop   1b
-
-    lea    si, [0x408]
-    lea    di, [BOOT_INFO_ADDR + BI_LPT_PORTS]
-    mov    cx, 3
-1:  mov    ax, [si]
-    stosw
-    add    si, 2
-    loop   1b
-
-    popa
-    ret
-FUNC_END(get_ports)
-
-/* EBDA physical address. */
-FUNC_BEGIN_LOCAL(get_ebda)
-    pusha
-    mov    ax, [0x40e]
-    movzx  eax, ax
-    shl    eax, 4
-    mov    [BOOT_INFO_ADDR + BI_EBDA], eax
-    popa
-    ret
-FUNC_END(get_ebda)
-
-/* ACPI RSD pointer. */
+/* RSDP. */
 FUNC_BEGIN_LOCAL(get_rsdp)
     pusha
     push   es
 
-    mov    ax, [0x40e]  /* EBDA segment */
-    test   ax, ax
-    jz     1f
-
+    mov    ax, 0xe000
     mov    es, ax
     xor    di, di
-    mov    ecx, 0x1000
-    call   find_rsdp
-
-    test   ax, ax
-    jnz    2f
-
-    /* Scan BIOS ROM if we haven't found it yet. */
-1:  mov    ax, 0xe000
-    mov    es, ax
-    xor    di, di
-    mov    ecx, 128 * 1024
+    mov    ecx, 0x10000 /* First 64 KiB. */
     call   find_rsdp
 
     /* Did we find it? */
-    test   ax, ax
-    jz     3f
+    test   al, al
+    jnz    2f
+
+    /* Try the second 64 KiB. */
+    mov    ax, 0xf000
+    mov    es, ax
+    xor    di, di
+    mov    ecx, 0x10000
+    call   find_rsdp
+
+    /* Did we find it? */
+    test   al, al
+    jz     3f /* Give up. */
 
 2:  mov    ax, es
     movzx  eax, ax
     shl    eax, 4
     movzx  edi, di
     add    eax, edi
-    mov    [BOOT_INFO_ADDR + BI_RSDP], eax
+    mov    [boot_info + BI_RSDP], eax
 
 3:  pop    es
     popa
@@ -371,41 +410,47 @@ FUNC_END(get_rsdp)
  * ES:DI = start
  * ECX = bytes to scan
  * Returns:
- * ES:DI = location if found, AX=1, else AX=0
+ * ES:DI = location if found, AL = 1, else AL = 0
  */
 FUNC_BEGIN_LOCAL(find_rsdp)
     push   cx
     push   bp
     push   si
-    push   di
 
     lea    si, [rsdp_signature]
     mov    ebp, ecx
 
-1:  test   ebp, ebp
-    jz     2f
+1:  cmp    ebp, 8
+    jb     3f
 
     push   si
     push   di
-    mov    cx, 8 /* 8 characters in the signature */
+    mov    cx, 8 /* 8 characters in the signature. */
     repe cmpsb
     pop    di
     pop    si
     je     2f
 
-    inc    di
-    dec    ebp
+    add    di, 16
+    sub    ebp, 16
     jmp    1b
 
-2:  setz   al
-    pop    di
-    pop    si
+2:  mov    al, 1
+    jmp    4f
+
+3:  xor    al, al
+
+4:  pop    si
     pop    bp
     pop    cx
     ret
 FUNC_END(get_rsdp)
 
 .section .rodata, "a", @progbits
+
+OBJ_BEGIN_LOCAL(cmdline)
+    .asciz CMDLINE
+OBJ_END(cmdline)
 
 OBJ_BEGIN_LOCAL(rsdp_signature)
     .ascii "RSD PTR "
@@ -421,8 +466,32 @@ OBJ_END(err_no_long)
 
 .section .bss, "aw", @nobits
 
-OBJ_BEGIN_LOCAL(stack)
-    .space 0x1000
-OBJ_END(stack)
-/* Not local because we'll reuse it. */
-SYM_BEGIN_U(stack_top)
+OBJ_BEGIN_LOCAL(__stack)
+    .space 0x400
+OBJ_END(__stack)
+/* Global because we'll reuse it. */
+SYM_BEGIN_U(__stack_top)
+
+OBJ_BEGIN(boot_info_ptr)
+    .space 4
+OBJ_END(boot_info_ptr)
+
+OBJ_BEGIN_LOCAL(boot_info)
+    .space BOOT_INFO_SIZE
+OBJ_END(boot_info)
+
+OBJ_BEGIN_LOCAL(e820_map)
+    .space E820_MAX_SIZE
+OBJ_END(e820_map)
+
+OBJ_BEGIN_LOCAL(fb_info)
+    .space FB_INFO_SIZE
+OBJ_END(fb_info)
+
+OBJ_BEGIN_LOCAL(vbe_info)
+    .space 512
+OBJ_END(vbe_info)
+
+OBJ_BEGIN_LOCAL(vbe_mode_info)
+    .space 256
+OBJ_END(vbe_mode_info)

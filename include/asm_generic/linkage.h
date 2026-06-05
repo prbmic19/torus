@@ -3,7 +3,7 @@
 #ifndef ASM_GENERIC_LINKAGE_H
 #define ASM_GENERIC_LINKAGE_H 1
 
-#define SYM_ALIGNMENT 16
+#define SYM_ALIGNMENT 8
 
 #define SYM_BEGIN(_sym)             \
     .balign SYM_ALIGNMENT;          \

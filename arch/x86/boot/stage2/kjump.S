@@ -12,6 +12,12 @@
 .code32
 
 FUNC_BEGIN(prepare_kernel_jump)
+    /* Is PAE supported? */
+    mov    eax, 1
+    cpuid
+    test   edx, 1 << 6
+    jz     1f
+
     call   enter_long_mode
 
 1:  mov    eax, 0xb16ba115
@@ -35,6 +41,7 @@ FUNC_BEGIN_LOCAL(enter_long_mode)
     mov    ecx, MSR_EFER
     rdmsr
     or     eax, 1 << 8
+    and    eax, ~((1 << 0) | (1 << 1))
     wrmsr
 
     /* Enable paging. */
@@ -57,37 +64,36 @@ FUNC_BEGIN_LOCAL(lm_entry)
     mov    fs, ax
     mov    gs, ax
 
-    lea    rsp, [rip + stack_top]
-    and    rsp, -16
-    mov    rbp, rsp
+    lea    rsp, [rip + __stack_top]
+    and    rsp, -8
 
-    /* Remove stale values from protected mode. */
-    xor    eax, eax
-    xor    ecx, ecx
-    xor    edx, edx
+    /* Do we have a valid kernel? */
+    mov    ecx, 6
+    mov    rdi, KERNEL_ADDRESS
+    lea    rsi, [rip + kernel_signature]
+    repe cmpsb
+    jne    1f
+
+    /* Clear IF and VM. */
+    pushfq
+    and    qword ptr [rsp], ~((1 << 9) | (1 << 17))
+    popfq
+
     xor    ebx, ebx
-    xor    esi, esi
-    xor    edi, edi
-    /* Clear the newly accessible registers. */
-    xor    r8d, r8d
-    xor    r9d, r9d
-    xor    r10d, r10d
-    xor    r11d, r11d
+    xor    ebp, ebp
     xor    r12d, r12d
     xor    r13d, r13d
     xor    r14d, r14d
     xor    r15d, r15d
 
-    /* Do we have a valid kernel? */
-    mov    ecx, 6
-    mov    rdi, KERNEL_ADDRESS
-    lea    rsi, [rip + kernel_magic]
-    repe cmpsb
-    jne    1f
+    /* Magic number that the kernel expects. */
+    mov    eax, 0xc0ffee64
+
+    /* Pass the 4-byte boot info pointer and zero-extend it to 8 bytes. */
+    mov    edi, [rip + boot_info_ptr]
 
     /* Now, transfer control to the kernel. */
-    mov    rax, [KERNEL_ADDRESS + 10]
-    call   rax
+    call   qword ptr [KERNEL_ADDRESS + 10]
 
 1:  mov    eax, 0xb16ba115
     mov    ecx, 2
@@ -98,6 +104,6 @@ FUNC_END(lm_entry)
 
 .section .rodata, "a", @progbits
 
-OBJ_BEGIN_LOCAL(kernel_magic)
+OBJ_BEGIN_LOCAL(kernel_signature)
     .ascii "KERNEL"
-OBJ_END(kernel_magic)
+OBJ_END(kernel_signature)
