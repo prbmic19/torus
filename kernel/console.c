@@ -31,12 +31,6 @@ void console_putchar(int ch)
 
 void console_puts(const char *str)
 {
-    // For now, let's manually panic() for NULL pointers.
-    if (unlikely(!str))
-    {
-        panic("NULL pointer.");
-    }
-
     while (*str)
     {
         console_putchar(*str++);

@@ -55,12 +55,10 @@ FUNC_END(enter_long_mode)
 .code64
 
 FUNC_BEGIN_LOCAL(lm_entry)
-    mov    ax, 0x10
+    /* SS stays as is. */
+    xor    eax, eax
     mov    ds, ax
-    mov    ss, ax
     mov    es, ax
-
-    xor    ax, ax
     mov    fs, ax
     mov    gs, ax
 

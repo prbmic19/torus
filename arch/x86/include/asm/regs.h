@@ -26,7 +26,7 @@ struct regs
 };
 
 // This clears the .orig_rax, .errcode, .cs, and .ss fields.
-__always_inline static void context_save(struct regs *regs)
+__always_inline static void context_store(struct regs *regs)
 {
     // Save RIP first.
     asm volatile (

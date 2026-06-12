@@ -25,12 +25,12 @@ FUNC_END(enter_protected_mode)
 .code32
 
 FUNC_BEGIN_LOCAL(pm_entry)
-    mov    ax, 0x20
+    mov    eax, 0x10
     mov    ds, ax
     mov    ss, ax
     mov    es, ax
     
-    xor    ax, ax
+    xor    eax, eax
     mov    fs, ax
     mov    gs, ax
 
@@ -54,23 +54,9 @@ FUNC_END(pm_entry)
 OBJ_BEGIN_LOCAL(gdt)
     .quad 0
 
-    /* Change this once we have syscalls. (SYSRET mandates special GDT layout.)
-
-    /* Kernel code and data, 64-bit. */
-    .quad 0x00af9a000000ffff
-    .quad 0x00af92000000ffff
-
-    /* Kernel code and data, 32-bit. */
-    .quad 0x00cf9a000000ffff
-    .quad 0x00cf92000000ffff
-
-    /* User code and data, 64-bit. */
-    .quad 0x00affa000000ffff
-    .quad 0x00aff2000000ffff
-
-    /* User code and data, 32-bit. */
-    .quad 0x00cffa000000ffff
-    .quad 0x00cff2000000ffff
+    .quad 0x00af9a000000ffff /* Kernel 64-bit code. */
+    .quad 0x00cf92000000ffff /* Kernel data. */
+    .quad 0x00cf9a000000ffff /* Kernel 32-bit code. */
 OBJ_END(gdt)
 
 SYM_BEGIN_LOCAL_U(gdt_end)

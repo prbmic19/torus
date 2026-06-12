@@ -8,7 +8,8 @@ CSRCS += \
 	$(ARCH_KERNEL_DIR)/idt.c \
 	$(ARCH_KERNEL_DIR)/irq.c \
 	$(ARCH_KERNEL_DIR)/exception.c \
-	$(ARCH_KERNEL_DIR)/regs.c
+	$(ARCH_KERNEL_DIR)/regs.c \
+	$(ARCH_KERNEL_DIR)/gdt.c
 
 ASSRCS += \
 	$(BOOT_DIR)/boot.S \
@@ -16,4 +17,5 @@ ASSRCS += \
 	$(STAGE2_DIR)/pmjump.S \
 	$(STAGE2_DIR)/kjump.S \
 	$(ARCH_KERNEL_DIR)/head_s.S \
-	$(ARCH_KERNEL_DIR)/isr_stubs.S
+	$(ARCH_KERNEL_DIR)/isr_stubs.S \
+	$(ARCH_KERNEL_DIR)/boot_pgtables.S

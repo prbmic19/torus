@@ -12,27 +12,37 @@ static unsigned int lcg32(void)
     return lcg_state;
 }
 
-volatile unsigned int *fb;
+static volatile pixel_t *fb;
 
 void fb_init(void)
 {
     pr_debug(
         "fb: Framebuffer at 0x%lx, %ux%ux%u, pitch: %u B.\n",
-        fb_info.phys_addr,
+        fb_info.virt_addr,
         fb_info.width,
         fb_info.height,
         fb_info.bpp,
         fb_info.pitch
     );
 
-    fb = (volatile unsigned int *)fb_info.phys_addr;
+    fb = (volatile pixel_t *)fb_info.virt_addr;
 
     // Test pattern.
     for (unsigned int y = 0; y < fb_info.height; y++)
     {
         for (unsigned int x = 0; x < fb_info.width; x++)
         {
-            fb[y * (fb_info.pitch / 4) + x] = (lcg32() & 0xff) | 0xff000000;
+            fb_set_pixel(x, y, rgba(255, 0, 0, lcg32() & 0xff));
         }
     }
+}
+
+void fb_set_pixel(unsigned int x, unsigned int y, pixel_t pixel)
+{
+    if (!fb)
+    {
+        return;
+    }
+
+    fb[y * (fb_info.pitch / 4) + x] = pixel;
 }

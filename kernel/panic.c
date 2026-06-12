@@ -28,7 +28,7 @@ __noreturn void vpanic(const char *fmt, va_list args)
     panic_in_progress = true;
 
     struct regs regs;
-    context_save(&regs);
+    context_store(&regs);
    
     pr_emerg("Kernel panic!\n");
     pr_emerg("Message: ");

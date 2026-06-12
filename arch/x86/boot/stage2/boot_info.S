@@ -48,34 +48,35 @@
 /*
  * Layout of the framebuffer info structure:
  *  Offset      Size (B)    Description
- *  0x00        8           Address
- *  0x08        4           Pitch
- *  0x0c        4           Width
- *  0x10        4           Height
- *  0x14        4           Bits per pixel
- *  0x18        4           Red size
- *  0x1c        4           Red shift
- *  0x20        4           Green size
- *  0x24        4           Green shift
- *  0x28        4           Blue size
- *  0x2c        4           Blue shift
- *  0x30        4           Reserved size
- *  0x34        4           Reserved shift
+ *  0x00        8           Physical address
+ *  0x08        8           Virtual address
+ *  0x10        4           Pitch
+ *  0x14        4           Width
+ *  0x18        4           Height
+ *  0x1c        4           Bits per pixel
+ *  0x20        4           Red size
+ *  0x24        4           Red shift
+ *  0x28        4           Green size
+ *  0x2c        4           Green shift
+ *  0x30        4           Blue size
+ *  0x34        4           Blue shift
+ *  0x38        4           Reserved size
+ *  0x3c        4           Reserved shift
  */
 
 #define FB_ADDR        0x00
-#define FB_PITCH       0x08
-#define FB_WIDTH       0x0c
-#define FB_HEIGHT      0x10
-#define FB_BPP         0x14
-#define FB_RED_SIZE    0x18
-#define FB_RED_SHIFT   0x1c
-#define FB_GREEN_SIZE  0x20
-#define FB_GREEN_SHIFT 0x24
-#define FB_BLUE_SIZE   0x28
-#define FB_BLUE_SHIFT  0x2c
-#define FB_RSVD_SIZE   0x30
-#define FB_RSVD_SHIFT  0x34
+#define FB_PITCH       0x10
+#define FB_WIDTH       0x14
+#define FB_HEIGHT      0x18
+#define FB_BPP         0x1c
+#define FB_RED_SIZE    0x20
+#define FB_RED_SHIFT   0x24
+#define FB_GREEN_SIZE  0x28
+#define FB_GREEN_SHIFT 0x2c
+#define FB_BLUE_SIZE   0x30
+#define FB_BLUE_SHIFT  0x34
+#define FB_RSVD_SIZE   0x38
+#define FB_RSVD_SHIFT  0x3c
 
 #define FB_INFO_SIZE 52
 

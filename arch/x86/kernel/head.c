@@ -1,18 +1,19 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <torus/compiler.h>
-#include <torus/types.h>
 #include <kernel/console.h>
 #include <kernel/kprintf.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <kernel/acpi.h>
 #include <kernel/memmap.h>
-#include <drivers/fb.h>
 #include <drivers/serial.h>
+#include <drivers/fb.h>
 #include <lib/string.h>
 #include <asm/idt.h>
 #include <asm/boot_info.h>
+#include <asm/paging.h>
+#include <asm/gdt.h>
 
 extern struct boot_info *boot_info;
 
@@ -61,7 +62,7 @@ static void verify_boot_info(void)
         panic("fb: Framebuffer info pointer is NULL.");
     }
 
-    struct fb_info *__fb_info = (struct fb_info *)boot_info->fb_info_addr;
+    struct fb_info *__fb_info = vaddr(boot_info->fb_info_addr);
 
     if (unlikely(!__fb_info->phys_addr))
     {
@@ -97,7 +98,7 @@ static void verify_boot_info(void)
         panic("ACPI: No RSDP.");
     }
 
-    struct rsdp *__rsdp = (struct rsdp *)boot_info->rsdp_addr;
+    struct rsdp *__rsdp = vaddr(boot_info->rsdp_addr);
     u8 *raw___rsdp = (u8 *)__rsdp;
     u8 sum = 0;
 
@@ -127,17 +128,18 @@ static void verify_boot_info(void)
 // For e820_map, we copy the pointer directly. copy_memmap() will handle copying it.
 static void copy_boot_info(void)
 {
-    strncpy(boot_command_line, (char *)boot_info->cmdline_addr, sizeof(boot_command_line) - 1);
+    strncpy(boot_command_line, (char *)vaddr(boot_info->cmdline_addr), sizeof(boot_command_line) - 1);
     strncpy(saved_command_line, boot_command_line, sizeof(saved_command_line) - 1);
 
     boot_command_line[sizeof(boot_command_line) - 1] = '\0';
     saved_command_line[sizeof(saved_command_line) - 1] = '\0';
 
-    memcpy(&fb_info, (struct fb_info *)boot_info->fb_info_addr, sizeof(fb_info));
+    memcpy(&fb_info, vaddr(boot_info->fb_info_addr), sizeof(fb_info));
+    fb_info.virt_addr = (unsigned long)vaddr(fb_info.phys_addr);
 
-    memcpy(&rsdp, (struct rsdp *)boot_info->rsdp_addr, sizeof(rsdp));
+    memcpy(&rsdp, vaddr(boot_info->rsdp_addr), sizeof(rsdp));
 
-    e820_map = (struct e820_entry *)boot_info->e820_map_addr;
+    e820_map = vaddr(boot_info->e820_map_addr);
 }
 
 static void copy_memmap(void)
@@ -178,6 +180,8 @@ __noreturn void arch_kmain(void)
 {
     serial_init();
     console_init(&serial_console);
+
+    gdt_init();
 
     idt_init();
     local_irq_enable();

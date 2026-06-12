@@ -18,7 +18,7 @@ __noreturn void kmain(void)
 
     memmap_init();
     acpi_init();
-    fb_init();
+    // fb_init();
 
     while (1)
     {

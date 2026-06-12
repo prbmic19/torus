@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#include <torus/compiler.h>
 #include <kernel/kprintf.h>
 #include <asm/idt.h>
 #include <asm/exception.h>
@@ -9,19 +8,23 @@
 static struct idt_ptr idt_ptr;
 static struct idt_entry idt_entries[IDT_ENTRIES];
 
-void idt_set_gate(int gate, void (*handler_addr)(void))
+void idt_set_gate(int gate, void (*handler_addr)(void), unsigned short selector, unsigned char ist, unsigned char type_attr)
 {
+    gate = gate > (int)(sizeof(idt_entries) - 1) ? (int)(sizeof(idt_entries) - 1) : gate;
+    ist &= 0x7;
+
     unsigned long offset = (unsigned long)handler_addr;
-    unsigned short low16 = offset & 0xffff;
-    unsigned short mid16 = (offset >> 16) & 0xffff;
-    unsigned int high32 = (offset >> 32) & 0xffffffff;
+    unsigned short o_low16 = offset & 0xffff;
+    unsigned short o_mid16 = (offset >> 16) & 0xffff;
+    unsigned int o_high32 = (offset >> 32) & 0xffffffff;
 
     idt_entries[gate] = (struct idt_entry){
-        .offset_low = low16,
-        .selector = 0x8, // Kernel CS selector.
-        .type_attr = 0x8e,
-        .offset_mid = mid16,
-        .offset_high = high32
+        .offset_low = o_low16,
+        .selector = selector,
+        .ist = ist,
+        .type_attr = type_attr,
+        .offset_mid = o_mid16,
+        .offset_high = o_high32
     };
 }
 

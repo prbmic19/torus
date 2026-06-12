@@ -26,22 +26,22 @@ void irq_init(void)
 {
     pic_init();
 
-    idt_set_gate(32, irq0);
-    idt_set_gate(33, irq1);
-    idt_set_gate(34, irq2);
-    idt_set_gate(35, irq3);
-    idt_set_gate(36, irq4);
-    idt_set_gate(37, irq5);
-    idt_set_gate(38, irq6);
-    idt_set_gate(39, irq7);
-    idt_set_gate(40, irq8);
-    idt_set_gate(41, irq9);
-    idt_set_gate(42, irq10);
-    idt_set_gate(43, irq11);
-    idt_set_gate(44, irq12);
-    idt_set_gate(45, irq13);
-    idt_set_gate(46, irq14);
-    idt_set_gate(47, irq15);
+    idt_set_gate(32, irq0, 0x08, 0, 0x8e);
+    idt_set_gate(33, irq1, 0x08, 0, 0x8e);
+    idt_set_gate(34, irq2, 0x08, 0, 0x8e);
+    idt_set_gate(35, irq3, 0x08, 0, 0x8e);
+    idt_set_gate(36, irq4, 0x08, 0, 0x8e);
+    idt_set_gate(37, irq5, 0x08, 0, 0x8e);
+    idt_set_gate(38, irq6, 0x08, 0, 0x8e);
+    idt_set_gate(39, irq7, 0x08, 0, 0x8e);
+    idt_set_gate(40, irq8, 0x08, 0, 0x8e);
+    idt_set_gate(41, irq9, 0x08, 0, 0x8e);
+    idt_set_gate(42, irq10, 0x08, 0, 0x8e);
+    idt_set_gate(43, irq11, 0x08, 0, 0x8e);
+    idt_set_gate(44, irq12, 0x08, 0, 0x8e);
+    idt_set_gate(45, irq13, 0x08, 0, 0x8e);
+    idt_set_gate(46, irq14, 0x08, 0, 0x8e);
+    idt_set_gate(47, irq15, 0x08, 0, 0x8e);
 }
 
 void irq_main_handler(struct regs *regs)

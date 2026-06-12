@@ -106,12 +106,6 @@ __printf(1, 0) int vkprintf(const char *fmt, va_list args)
     int log_level = -1;
     int i = 0;
 
-    // For now, let's manually panic() for NULL pointers.
-    if (unlikely(!fmt))
-    {
-        panic("vkprintf: NULL pointer.");
-    }
-
     // Suppress debug logs unless the "debug" command-line option is present.
     if (strncmp(fmt, PL_DEBUG, 2) == 0 && !cmdline_find_option_bool(saved_command_line, "debug"))
     {

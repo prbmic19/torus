@@ -17,14 +17,15 @@ struct idt_entry
 {
     unsigned short offset_low;
     unsigned short selector;
-    unsigned char ist; // Plus 5 reserved bits.
+    unsigned char ist : 3;
+    unsigned char _rsvd0 : 5;
     unsigned char type_attr;
     unsigned short offset_mid;
     unsigned int offset_high;
-    unsigned int reserved;
+    unsigned int _rsvd1;
 } __packed;
 
-extern void idt_set_gate(int gate, void (*handler_addr)(void));
+extern void idt_set_gate(int gate, void (*handler_addr)(void), unsigned short selector, unsigned char ist, unsigned char type_attr);
 extern void idt_load(void);
 extern void idt_init(void);
 

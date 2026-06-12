@@ -33,7 +33,7 @@ Before transferring control to the kernel, the machine must have the following s
     - A 64-bit kernel code descriptor at selector `0x08`.
     - A kernel data descriptor at selector `0x10`.
 - `CS` is a 64-bit kernel code segment at selector `0x08`.
-- `SS` is a 64-bit kernel data segment at selector `0x10`.
+- `SS` is kernel data segment at selector `0x10`.
 - `A20 gate` is enabled.
 - `CR0` bits 31 (`PG`) and 0 (`PE`) are set. All other bits are undefined.
 - `CR3` contains the physical address of a valid page table hierarchy. At minimum, the page tables must identity-map:
@@ -112,6 +112,7 @@ The `fb_info_addr` points to a framebuffer information structure. The structure 
 struct fb_info
 {
     uint64_t phys_addr;
+    uint64_t virt_addr;
     uint32_t pitch;
     uint32_t width;
     uint32_t height;
@@ -130,6 +131,8 @@ struct fb_info
 If a framebuffer is available, the `phys_addr` field contains the physical address of the beginning of the framebuffer. The framebuffer memory region is accessible through the identity-mapping established by the bootloader.
 
 If no framebuffer is available, the `phys_addr` field must be zero.
+
+The `virt_addr` field is undefined. It is up to the kernel to set this field once a different page table hierarchy is established.
 
 The framebuffer uses the pixel format described by the color mask fields. 
 

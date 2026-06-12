@@ -1,7 +1,7 @@
 ARCH_INCLUDE := arch/x86/include
 
 ARCH_CFLAGS_KERNEL_NO_INC := $(CFLAGS) -DDEFAULT_LOG_LEVEL=$(DEFAULT_LOG_LEVEL) -DCMDLINE_SIZE=$(CMDLINE_SIZE) \
-	-m64 -mno-red-zone -mgeneral-regs-only -mpreferred-stack-boundary=3
+	-m64 -mno-red-zone -mgeneral-regs-only -mpreferred-stack-boundary=3 -mcmodel=kernel
 ARCH_CFLAGS_KERNEL := $(ARCH_CFLAGS_KERNEL_NO_INC) -I$(ARCH_INCLUDE)
 ARCH_CFLAGS_BOOT := $(CFLAGS) -I$(ARCH_INCLUDE) -m32 -mno-red-zone -mgeneral-regs-only -mpreferred-stack-boundary=3
 ARCH_ASFLAGS_KERNEL := $(ASFLAGS) -I$(ARCH_INCLUDE) -m64

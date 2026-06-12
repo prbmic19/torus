@@ -42,18 +42,18 @@
     pop    rdi
 .endm
 
-.macro EXCEPTION_NOERRCODE except_no
+.macro EXCEPTION_NOERRCODE except_no, dest_stub
 FUNC_BEGIN(exception\except_no)
     push   0
     push   \except_no
-    jmp    exception_common_stub
+    jmp    \dest_stub
 FUNC_END(exception\except_no)
 .endm
 
-.macro EXCEPTION_ERRCODE except_no
+.macro EXCEPTION_ERRCODE except_no, dest_stub
 FUNC_BEGIN(exception\except_no)
     push   \except_no
-    jmp    exception_common_stub
+    jmp    \dest_stub
 FUNC_END(exception\except_no)
 .endm
 
@@ -74,6 +74,24 @@ FUNC_BEGIN(exception_common_stub)
     iretq
 FUNC_END(exception_common_stub)
 
+FUNC_BEGIN(df_stub)
+    PUSH_REGS
+    mov    rdi, rsp
+    call   exception_df_handler
+    POP_REGS
+    add    rsp, 16
+    iretq
+FUNC_END(df_stub)
+
+FUNC_BEGIN(ss_stub)
+    PUSH_REGS
+    mov    rdi, rsp
+    call   exception_ss_handler
+    POP_REGS
+    add    rsp, 16
+    iretq
+FUNC_END(ss_stub)
+
 FUNC_BEGIN(irq_common_stub)
     PUSH_REGS
     mov    rdi, rsp
@@ -84,38 +102,38 @@ FUNC_BEGIN(irq_common_stub)
 FUNC_END(irq_common_stub)
 
 /* CPU exceptions. */
-EXCEPTION_NOERRCODE 0
-EXCEPTION_NOERRCODE 1
-EXCEPTION_NOERRCODE 2
-EXCEPTION_NOERRCODE 3
-EXCEPTION_NOERRCODE 4
-EXCEPTION_NOERRCODE 5
-EXCEPTION_NOERRCODE 6
-EXCEPTION_NOERRCODE 7
-EXCEPTION_ERRCODE   8
-EXCEPTION_NOERRCODE 9
-EXCEPTION_ERRCODE   10
-EXCEPTION_ERRCODE   11
-EXCEPTION_ERRCODE   12
-EXCEPTION_ERRCODE   13
-EXCEPTION_ERRCODE   14
-EXCEPTION_NOERRCODE 15
-EXCEPTION_NOERRCODE 16
-EXCEPTION_NOERRCODE 17
-EXCEPTION_NOERRCODE 18
-EXCEPTION_NOERRCODE 19
-EXCEPTION_NOERRCODE 20
-EXCEPTION_NOERRCODE 21
-EXCEPTION_NOERRCODE 22
-EXCEPTION_NOERRCODE 23
-EXCEPTION_NOERRCODE 24
-EXCEPTION_NOERRCODE 25
-EXCEPTION_NOERRCODE 26
-EXCEPTION_NOERRCODE 27
-EXCEPTION_NOERRCODE 28
-EXCEPTION_NOERRCODE 29
-EXCEPTION_NOERRCODE 30
-EXCEPTION_NOERRCODE 31
+EXCEPTION_NOERRCODE 0, exception_common_stub 
+EXCEPTION_NOERRCODE 1, exception_common_stub
+EXCEPTION_NOERRCODE 2, exception_common_stub
+EXCEPTION_NOERRCODE 3, exception_common_stub
+EXCEPTION_NOERRCODE 4, exception_common_stub
+EXCEPTION_NOERRCODE 5, exception_common_stub
+EXCEPTION_NOERRCODE 6, exception_common_stub
+EXCEPTION_NOERRCODE 7, exception_common_stub
+EXCEPTION_ERRCODE   8, df_stub
+EXCEPTION_NOERRCODE 9, exception_common_stub
+EXCEPTION_ERRCODE   10, exception_common_stub 
+EXCEPTION_ERRCODE   11, exception_common_stub
+EXCEPTION_ERRCODE   12, ss_stub
+EXCEPTION_ERRCODE   13, exception_common_stub
+EXCEPTION_ERRCODE   14, exception_common_stub
+EXCEPTION_NOERRCODE 15, exception_common_stub
+EXCEPTION_NOERRCODE 16, exception_common_stub
+EXCEPTION_NOERRCODE 17, exception_common_stub
+EXCEPTION_NOERRCODE 18, exception_common_stub
+EXCEPTION_NOERRCODE 19, exception_common_stub
+EXCEPTION_NOERRCODE 20, exception_common_stub
+EXCEPTION_NOERRCODE 21, exception_common_stub
+EXCEPTION_NOERRCODE 22, exception_common_stub
+EXCEPTION_NOERRCODE 23, exception_common_stub
+EXCEPTION_NOERRCODE 24, exception_common_stub
+EXCEPTION_NOERRCODE 25, exception_common_stub
+EXCEPTION_NOERRCODE 26, exception_common_stub
+EXCEPTION_NOERRCODE 27, exception_common_stub
+EXCEPTION_NOERRCODE 28, exception_common_stub
+EXCEPTION_NOERRCODE 29, exception_common_stub
+EXCEPTION_NOERRCODE 30, exception_common_stub
+EXCEPTION_NOERRCODE 31, exception_common_stub
 
 /* Hardware interrupts. */
 IRQ 0
