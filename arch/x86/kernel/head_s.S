@@ -21,7 +21,8 @@ FUNC_BEGIN(kentry)
     endbr64
 
     /* Were we loaded by a compliant bootloader? */
-    cmp    eax, 0xc0ffee64
+    mov    ecx, 0xc0ffee64
+    cmp    rax, rcx
     jne    1f
 
     /*
@@ -35,7 +36,7 @@ FUNC_BEGIN(kentry)
     and    rsp, -8
     mov    rbp, rsp
 
-    /* Load our page tables. */
+    /* Load our page tables (identity mapping + higher half). */
     mov    rax, offset paddr(boot_pml4)
     mov    cr3, rax
 
@@ -94,11 +95,11 @@ FUNC_END(hh_entry)
 
 .section .rodata
 
-OBJ_BEGIN(bad_bootloader)
+OBJ_BEGIN_LOCAL(bad_bootloader)
     .asciz "Bootloader is not compliant with the Torus boot protocol."
 OBJ_END(bad_bootloader)
 
-OBJ_BEGIN(boot_gdt)
+OBJ_BEGIN_LOCAL(boot_gdt)
     .quad 0
 
     /* Kernel code and data. */
@@ -108,7 +109,7 @@ OBJ_END(boot_gdt)
 
 SYM_BEGIN_LOCAL_U(boot_gdt_end)
 
-OBJ_BEGIN(boot_gdt_ptr)
+OBJ_BEGIN_LOCAL(boot_gdt_ptr)
     .word boot_gdt_end - boot_gdt - 1
     .quad boot_gdt
 OBJ_END(boot_gdt_ptr)
@@ -136,6 +137,6 @@ OBJ_BEGIN(boot_info)
     .space 8
 OBJ_END(boot_info)
 
-OBJ_BEGIN(null_ldt_ptr)
+OBJ_BEGIN_LOCAL(null_ldt_ptr)
     .space 10
 OBJ_END(null_ldt_ptr)

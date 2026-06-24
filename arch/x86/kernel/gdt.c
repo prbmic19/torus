@@ -16,6 +16,7 @@ void gdt_set_entry(int entry, unsigned int limit, unsigned int base, unsigned ch
 
     unsigned short l_low16 = limit & 0xffff;
     unsigned char l_high4 = (limit >> 16) & 0xf;
+
     unsigned short b_low16 = base & 0xffff;
     unsigned char b_mid8 = (base >> 16) & 0xff;
     unsigned char b_high8 = (base >> 24) & 0xff;
@@ -33,12 +34,14 @@ void gdt_set_entry(int entry, unsigned int limit, unsigned int base, unsigned ch
 
 void gdt_set_sys_entry(int entry, unsigned int limit, unsigned long base, unsigned char access, unsigned char flags)
 {
+    // System descriptors take up 2 entries (16 bytes), so ensure there is enough space.
     entry = entry > (int)(sizeof(gdt_entries) - 2) ? (int)(sizeof(gdt_entries) - 2) : entry;
     limit &= 0xfffff;
     flags &= 0xf;
 
     unsigned short l_low16 = limit & 0xffff;
     unsigned char l_high4 = (limit >> 16) & 0xf;
+
     unsigned short b_low16 = base & 0xffff;
     unsigned char b_mid8 = (base >> 16) & 0xff;
     unsigned char b_high8 = (base >> 24) & 0xff;

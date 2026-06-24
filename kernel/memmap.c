@@ -14,9 +14,9 @@ void memmap_init(void)
     for (unsigned int i = 0; i < memmap_entry_count; i++)
     {
         pr_info(
-            "    0x%lx-0x%lx: %s\n",
-            memmap[i].base,
-            memmap[i].base + memmap[i].len - 1,
+            "    %p-%p: %s\n",
+            (void *)memmap[i].base,
+            (void *)(memmap[i].base + memmap[i].len - 1),
             memmap_entry_type_to_string(memmap[i].type)
         );
     }
@@ -51,9 +51,9 @@ void memmap_init(void)
         memmap[1].type = orig_type;
 
         pr_debug(
-            "memmap: Updated 0x%lx-0x%lx from %s to %s.\n",
-            memmap[0].base,
-            memmap[0].base + memmap[0].len - 1,
+            "memmap: Updated %p-%p from %s to %s.\n",
+            (void *)memmap[0].base,
+            (void *)(memmap[0].base + memmap[0].len - 1),
             memmap_entry_type_to_string(orig_type),
             memmap_entry_type_to_string(memmap[0].type)
         );
@@ -75,7 +75,6 @@ const char *memmap_entry_type_to_string(enum memmap_entry_type type)
         case MEMMAP_TYPE_UNUSABLE:
             return "unusable";
         case MEMMAP_TYPE_UNKNOWN:
-            fallthrough;
         default:
             return "unknown";
     }

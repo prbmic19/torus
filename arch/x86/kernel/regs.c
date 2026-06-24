@@ -4,15 +4,15 @@
 #include <kernel/kprintf.h>
 #include <asm/regs.h>
 
-static bool is_valid_stack(unsigned long rsp)
+static bool is_valid_stack(unsigned long sp)
 {
-    extern unsigned long __stack;
+    extern char __stack[];
     extern unsigned long __stack_top;
     
     unsigned long stack_bottom = (unsigned long)&__stack;
     unsigned long stack_top = (unsigned long)&__stack_top;
 
-    return rsp >= stack_bottom && rsp < stack_top && (rsp & 0x7) == 0;
+    return sp >= stack_bottom && sp < stack_top && (sp & 0x7) == 0;
 }
 
 void context_dump(const struct regs *regs)
@@ -50,11 +50,11 @@ void context_dump(const struct regs *regs)
     pr_emerg("    cr8: 0x%lx\n", read_cr8());
 
     // Dump backtrace.
-    pr_emerg("    Backtrace:\n");
+    pr_emerg("Backtrace:\n");
     unsigned long rbp = regs->rbp;
     for (int i = 0; is_valid_stack(rbp); i++)
     {
-        pr_emerg("        #%d: 0x%lx\n", i, *(unsigned long *)(rbp + 8));
+        pr_emerg("    #%d: %p\n", i, (void *)*(unsigned long *)(rbp + 8));
         rbp = *(unsigned long *)rbp;
     }
 }

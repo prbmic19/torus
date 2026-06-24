@@ -11,7 +11,7 @@
 
 #include <stdarg.h>
 
-static bool panic_in_progress = false;
+static volatile bool panic_in_progress = false;
 
 __noreturn void vpanic(const char *fmt, va_list args)
 {

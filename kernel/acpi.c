@@ -6,8 +6,8 @@
 void acpi_init(void)
 {
     pr_debug(
-        "ACPI: RSDT at 0x%lx, OEM ID: '%c%c%c%c%c%c'.\n",
-        (unsigned long)rsdp.rsdt_addr,
+        "ACPI: RSDT at physical %p, OEM ID: '%c%c%c%c%c%c'.\n",
+        (void *)(unsigned long)rsdp.rsdt_addr,
         rsdp.oem_id[0],
         rsdp.oem_id[1],
         rsdp.oem_id[2],

@@ -17,8 +17,8 @@ static volatile pixel_t *fb;
 void fb_init(void)
 {
     pr_debug(
-        "fb: Framebuffer at 0x%lx, %ux%ux%u, pitch: %u B.\n",
-        fb_info.virt_addr,
+        "fb: Framebuffer at physical 0x%lx, %ux%ux%u, pitch: %u B.\n",
+        fb_info.phys_addr,
         fb_info.width,
         fb_info.height,
         fb_info.bpp,

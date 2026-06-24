@@ -54,7 +54,7 @@ boot:
     add    eax, 511
     shr    eax, 9
     push   eax /* Save */
-    dec    eax
+    sub    eax, 1
     /* Store remaining sector count. */
     mov    [dap_stage2_rest + 2], ax
     /* Load remaining sectors after first. */
@@ -65,9 +65,9 @@ boot:
     
     /* Determine where to read from. */
     pop    eax
-    inc    eax
+    add    eax, 1
     mov    [.Lklba1], eax
-    inc    eax
+    add    eax, 1
     mov    [.Lklbarest], eax
 
     lea    si, [dap_kernel_1]
@@ -82,7 +82,7 @@ boot:
     mov    eax, es:[KERNEL_OFFSET + IMAGE_SIZE_OFFSET]
     add    eax, 511
     shr    eax, 9
-    dec    eax
+    sub    eax, 1
     mov    [dap_kernel_rest + 2], ax
     lea    si, [dap_kernel_rest]
     call   disk_read
@@ -146,7 +146,7 @@ rm_print_hex:
     mov    [bx], al
     
     ror    dx, 4
-    inc    cx
+    add    cx, 1
     jmp    1b
 
 3:  lea    si, [buf_hex_out]

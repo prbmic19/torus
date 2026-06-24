@@ -236,7 +236,7 @@ FUNC_BEGIN_LOCAL(get_e820_map)
     int    0x15
     jc     3f
 
-2:  inc    ebp
+2:  add    ebp, 1
     cmp    ebp, E820_MAX_ENTRIES
     je     5f
     add    di, 20

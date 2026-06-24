@@ -28,7 +28,7 @@ struct fb_info fb_info;
 
 struct rsdp rsdp;
 
-struct e820_entry *e820_map;
+static struct e820_entry *e820_map;
 struct memmap_entry memmap[MEMMAP_MAX_ENTRIES]; // TODO: __ro_after_init
 unsigned int memmap_entry_count; // TODO: __ro_after_init
 
@@ -189,6 +189,20 @@ __noreturn void arch_kmain(void)
     verify_boot_info();
     copy_boot_info();
     copy_memmap();
+
+    /*
+     * The compiler may have used the nonvolatile registers and left
+     * stale values there. Clean it up manually because we won't return.
+     */
+    asm volatile (
+        "xorl %%ebx, %%ebx;"
+        "xorl %%r12d, %%r12d;"
+        "xorl %%r13d, %%r13d;"
+        "xorl %%r14d, %%r14d;"
+        :
+        :
+        : "rbx", "r12", "r13", "r14", "cc"
+    );
 
     kmain();
 }
