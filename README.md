@@ -8,7 +8,7 @@ I intend to build a bootloader, kernel, and userspace from scratch. For now, Tor
 
 Very early development.
 
-The kernel sets up a minimal serial-backed console, basic interrupt handling, a PIT-based timer tick, and a higher half memory layout before entering an idle loop. The framebuffer test pattern is temporarily disabled.
+The kernel sets up a minimal serial-backed console, basic interrupt handling, a PIT-based clocksource, and a higher half memory layout before entering an idle loop. The framebuffer test pattern is temporarily disabled.
 
 ## Building
 

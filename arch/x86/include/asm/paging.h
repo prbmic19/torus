@@ -3,10 +3,17 @@
 #ifndef ASM_X86_PAGING_H
 #define ASM_X86_PAGING_H
 
-#define PAGE_P  (1ul << 0)
-#define PAGE_RW (1ul << 1)
-#define PAGE_PS (1ul << 7)
-#define PAGE_G  (1ul << 8)
+#ifdef __ASSEMBLER__
+#   define PAGE_P  (1ul << 0)
+#   define PAGE_RW (1ul << 1)
+#   define PAGE_PS (1ul << 7)
+#   define PAGE_G  (1ul << 8)
+#else
+#   define PAGE_P  (1 << 0)
+#   define PAGE_RW (1 << 1)
+#   define PAGE_PS (1 << 7)
+#   define PAGE_G  (1 << 8)
+#endif
 
 #define PAGE_SIZE 0x1000
 

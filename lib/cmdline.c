@@ -4,7 +4,7 @@
 #include <lib/cmdline.h>
 #include <lib/string.h>
 
-static int _isspace(int c)
+static bool _isspace(int c)
 {
     return c <= ' ';
 }
@@ -12,8 +12,8 @@ static int _isspace(int c)
 /*
  * Find a Boolean option in the command line.
  *
- * Returns 0 if the option was not found or the
- * position of that option (starting from 1) if it was found.
+ * Returns 0 if the option was not found or the position
+ * of that option (starting from 1) if it was found.
  */
 int cmdline_find_option_bool(const char *cmdline, const char *option)
 {

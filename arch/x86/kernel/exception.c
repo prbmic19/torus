@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <torus/compiler.h>
+#include <torus/types.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 #include <asm/exception.h>
 #include <asm/idt.h>
 #include <asm/regs.h>
 
-const char *const exception_messages[32] = {
+const char *const exception_messages[19] = {
     "Division error",
     "Debug",
     "NMI",
@@ -17,29 +18,16 @@ const char *const exception_messages[32] = {
     "Invalid opcode",
     "No coprocessor",
     "Double fault",
-    "Coprocessor segment overrun",
+    NULL,
     "Bad TSS",
     "Segment not present",
     "Stack fault",
     "General protection fault",
     "Page fault",
-    "(reserved)",
+    NULL,
     "Coprocessor fault",
     "Alignment check",
     "Machine check",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)",
-    "(reserved)"
 };
 
 extern void exception0(void);
@@ -113,17 +101,23 @@ void exception_init(void)
 
 __noreturn void exception_main_handler(struct regs *regs)
 {
-    panic("%s exception occurred. Error code: %lu.", exception_messages[regs->orig_rax], regs->errcode);
+    switch (regs->orig_rax)
+    {
+        case 9:
+        case 15:
+        case 19 ... 31:
+            panic(NULL, "Unexpected exception: %lu", regs->orig_rax);
+    }
+
+    panic(regs, "%s exception occurred. Error code: %lu.", exception_messages[regs->orig_rax], regs->errcode);
 }
 
 __noreturn void exception_df_handler(struct regs *regs)
 {
-    (void)regs;
-    panic("Double fault exception occurred.");
+    panic(regs, "Double fault exception occurred.");
 }
 
 __noreturn void exception_ss_handler(struct regs *regs)
 {
-    (void)regs;
-    panic("Stack fault exception occurred.");
+    panic(regs, "Stack fault exception occurred.");
 }

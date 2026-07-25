@@ -5,7 +5,7 @@
 
 struct console
 {
-    void (*putchar)(int c);
+    void (*putchar)(int ch);
 };
 
 void console_init(struct console *console);

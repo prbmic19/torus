@@ -2,11 +2,13 @@
 
 #include <torus/types.h>
 #include <kernel/kprintf.h>
+#include <kernel/build_bug.h>
 #include <asm/gdt.h>
 
 static struct gdt_ptr gdt_ptr;
 static unsigned long gdt_entries[5]; // Just reinterpret this for gdt_entry and gdt_sys_entry.
 static struct tss tss;
+static unsigned int descriptors_no;
 
 void gdt_set_entry(int entry, unsigned int limit, unsigned int base, unsigned char access, unsigned char flags)
 {
@@ -30,6 +32,8 @@ void gdt_set_entry(int entry, unsigned int limit, unsigned int base, unsigned ch
         .flags = flags,
         .base_high = b_high8
     };
+
+    descriptors_no++;
 }
 
 void gdt_set_sys_entry(int entry, unsigned int limit, unsigned long base, unsigned char access, unsigned char flags)
@@ -57,9 +61,11 @@ void gdt_set_sys_entry(int entry, unsigned int limit, unsigned long base, unsign
         .base_high = b_high8,
         .base_upper = b_upper32
     };
+
+    descriptors_no++;
 }
 
-static void tss_load(int selector)
+static inline void tss_load(int selector)
 {
     asm volatile ("ltr %0" : : "rm"((unsigned short)selector) : "memory"); 
 }
@@ -76,13 +82,13 @@ void gdt_load(int tss_selector)
 
 static void tss_init(void)
 {
-    extern unsigned long __stack_top;
-    extern unsigned long __stack_df_top;
-    extern unsigned long __stack_ss_top;
+    extern unsigned long __stack_top[];
+    extern unsigned long __stack_df_top[];
+    extern unsigned long __stack_ss_top[];
 
-    tss.rsp0 = (unsigned long)&__stack_top;
-    tss.ist[0] = (unsigned long)&__stack_df_top;
-    tss.ist[1] = (unsigned long)&__stack_ss_top;
+    tss.rsp0 = (unsigned long)__stack_top;
+    tss.ist[0] = (unsigned long)__stack_df_top;
+    tss.ist[1] = (unsigned long)__stack_ss_top;
     tss.io_map_base = sizeof(tss);
 }
 
@@ -103,5 +109,5 @@ void gdt_init(void)
 
     gdt_load(3 * 8);
 
-    pr_notice("GDT initialized.\n");
+    pr_notice("GDT: %u descriptors.\n", descriptors_no);
 }

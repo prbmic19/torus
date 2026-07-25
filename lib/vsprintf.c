@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <limits.h>
 
-#include <kernel/panic.h>
+#include <kernel/kprintf.h>
 
 // Returns number of digits converted.
 static int int_to_str(char *buf, size_t buf_size, u64 num, int base, bool uppercase)
@@ -223,6 +223,16 @@ __printf(3, 0) int vsnprintf(char *restrict buf, size_t buf_size, const char *re
             case '%':
                 buf[j++] = '%';
                 break;
+            case 'n':
+            case 'f':
+            case 'e':
+            case 'E':
+            case 'g':
+            case 'G':
+            case 'a':
+            case 'A':
+                pr_warn("vsnprintf: Bad format specifier: '%%%c'.\n", fmt[i]);
+                return -1;
             default:
                 buf[j++] = '%';
                 buf[j++] = fmt[i];

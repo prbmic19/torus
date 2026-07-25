@@ -3,6 +3,8 @@
 #ifndef ASM_GENERIC_LINKAGE_H
 #define ASM_GENERIC_LINKAGE_H 1
 
+#ifdef __ASSEMBLER__
+
 #define SYM_ALIGNMENT 8
 
 #define SYM_BEGIN(_sym)             \
@@ -54,5 +56,7 @@
     SYM_BEGIN_LOCAL_U(_func)
 
 #define FUNC_END(_func) SYM_END(_func)
+
+#endif // __ASSEMBLER__
 
 #endif // ASM_GENERIC_LINKAGE_H

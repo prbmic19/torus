@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <kernel/kprintf.h>
+#include <kernel/build_bug.h>
 #include <asm/idt.h>
 #include <asm/exception.h>
 #include <asm/irq.h>
@@ -41,5 +42,5 @@ void idt_init(void)
     exception_init();
     irq_init();
     idt_load();
-    pr_notice("IDT initialized.\n");
+    pr_notice("IDT: %zu entries.\n", sizeof(idt_entries) / sizeof(idt_entries[0]));
 }

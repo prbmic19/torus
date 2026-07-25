@@ -21,31 +21,31 @@ void memmap_init(void)
         );
     }
 
-    // Reserve 0x0-0xfff if it is not reserved yet.
+    // Reserve 0x0-0xffff if it is not reserved yet.
     if (
         memmap[0].base == 0x0 &&
-        memmap[0].len >= 0x1000 &&
+        memmap[0].len >= 0x10000 &&
         memmap[0].type != MEMMAP_TYPE_RESERVED &&
         memmap[0].type != MEMMAP_TYPE_UNUSABLE
     )
     {
         if (unlikely(memmap_entry_count >= MEMMAP_MAX_ENTRIES))
         {
-            panic("memmap: No space to split entry.");
+            panic(NULL, "memmap: No space to split entry.");
         }
 
-        const u64 split = 0x1000;
+        const u64 split = 0x10000;
         u64 orig_len = memmap[0].len;
         enum memmap_entry_type orig_type = memmap[0].type;
 
         memmove(&memmap[2], &memmap[1], (memmap_entry_count - 1) * sizeof(memmap[0]));
         memmap_entry_count++;
 
-        // Reserve 0x0-0xfff.
+        // Reserve 0x0-0xffff.
         memmap[0].len = split;
         memmap[0].type = MEMMAP_TYPE_RESERVED;
 
-        // Preserve 0x1000..orig_len.
+        // Preserve 0x10000..orig_len.
         memmap[1].base = split;
         memmap[1].len = orig_len - split;
         memmap[1].type = orig_type;

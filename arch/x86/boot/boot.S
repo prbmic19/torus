@@ -44,7 +44,7 @@ boot:
     call   verify_edd
 
     /* Load first sector of stage 2. */
-    lea    si, [dap_stage2_1]
+    mov    si, offset dap_stage2_1
     call   disk_read
 
     /* Read stage2 header. */
@@ -53,24 +53,24 @@ boot:
     /* sectors = ((size + 511) / 512) - 1 */
     add    eax, 511
     shr    eax, 9
-    push   eax /* Save */
-    sub    eax, 1
+    push   eax /* Save for later. */
+    dec    eax
     /* Store remaining sector count. */
     mov    [dap_stage2_rest + 2], ax
     /* Load remaining sectors after first. */
-    lea    si, [dap_stage2_rest]
+    mov    si, offset dap_stage2_rest
     call   disk_read
 
     /* Do pretty much the same thing for the kernel. */
     
     /* Determine where to read from. */
     pop    eax
-    add    eax, 1
+    inc    eax
     mov    [.Lklba1], eax
-    add    eax, 1
+    inc    eax
     mov    [.Lklbarest], eax
 
-    lea    si, [dap_kernel_1]
+    mov    si, offset dap_kernel_1
     call   disk_read
 
     push   es
@@ -82,24 +82,24 @@ boot:
     mov    eax, es:[KERNEL_OFFSET + IMAGE_SIZE_OFFSET]
     add    eax, 511
     shr    eax, 9
-    sub    eax, 1
+    dec    eax
     mov    [dap_kernel_rest + 2], ax
-    lea    si, [dap_kernel_rest]
+    mov    si, offset dap_kernel_rest
     call   disk_read
 
     pop    es
 
     /* Do we have a valid stage 2? */
     mov    cx, 6
-    lea    di, [STAGE2_OFFSET + IMAGE_SIGNATURE_OFFSET]
-    lea    si, [stage2_signature]
+    mov    di, STAGE2_OFFSET + IMAGE_SIGNATURE_OFFSET
+    mov    si, offset stage2_signature
     repe cmpsb
     jne    1f
 
     /* Transfer control to stage 2. */
     call   word ptr [STAGE2_OFFSET + IMAGE_ENTRY_OFFSET]
 
-1:  lea    si, [err_no_stage2]
+1:  mov    si, offset err_no_stage2
     call   rm_print
 
 1:  hlt
@@ -141,7 +141,7 @@ rm_print_hex:
     add    al, 7
 
     /* Place our character in the correct position. */
-2:  mov    bx, buf_hex_out + 5
+2:  mov    bx, offset buf_hex_out + 5
     sub    bx, cx
     mov    [bx], al
     
@@ -149,7 +149,7 @@ rm_print_hex:
     add    cx, 1
     jmp    1b
 
-3:  lea    si, [buf_hex_out]
+3:  mov    si, offset buf_hex_out
     call   rm_print
     popa
     ret
@@ -171,7 +171,7 @@ verify_edd:
     popa
     ret
 
-1:  lea    si, [err_no_lba]
+1:  mov    si, offset err_no_lba
     call   rm_print
 
 1:  hlt
@@ -195,7 +195,7 @@ disk_read:
     popa
     ret
 
-1:  lea    si, [err_disk_read]
+1:  mov    si, offset err_disk_read
     call   rm_print
     movzx  dx, ah
     call   rm_print_hex

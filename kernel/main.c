@@ -1,18 +1,24 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <torus/compiler.h>
-#include <kernel/timer.h>
+#include <kernel/clocksource.h>
 #include <kernel/kprintf.h>
 #include <kernel/irq.h>
 #include <kernel/memmap.h>
 #include <kernel/acpi.h>
+#include <kernel/bug.h>
 #include <drivers/fb.h>
 
 __noreturn void kmain(void)
 {
     extern const char saved_command_line[CMDLINE_SIZE];
 
-    timer_init(100);
+    if (WARN(irqs_disabled(), "Interrupts are still disabled, fixing it.\n"))
+    {
+        local_irq_enable();
+    }
+
+    clocksource_init();
 
     pr_notice("Command line: '%s'.\n", saved_command_line);
 

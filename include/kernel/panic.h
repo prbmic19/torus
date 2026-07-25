@@ -6,7 +6,11 @@
 #include <torus/compiler.h>
 #include <stdarg.h>
 
-extern __noreturn __printf(1, 0) void vpanic(const char *fmt, va_list args);
-extern __noreturn __printf(1, 2) void panic(const char *fmt, ...);
+// Must be defined somewhere in 'arch/*'.
+struct regs;
+
+// regs is nullable for both.
+extern __noreturn __printf(2, 0) void vpanic(const struct regs *restrict regs, const char *restrict fmt, va_list args);
+extern __noreturn __printf(2, 3) void panic(const struct regs *restrict regs, const char *restrict fmt, ...);
 
 #endif // KERNEL_PANIC_H

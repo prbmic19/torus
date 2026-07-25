@@ -5,12 +5,12 @@
 
 #include <torus/compiler.h>
 
-// Must define arch_local_irq_enable(), arch_local_irq_disable(), arch_cpu_safe_halt(), arch_cpu_halt(), and arch_cpu_hcf().
+// Must define arch_local_irq_enable(), arch_local_irq_disable(), arch_irqs_disabled(), arch_cpu_safe_halt(), and arch_cpu_halt().
 #include <asm/irq.h>
 // Must define struct regs.
 #include <asm/regs.h>
 
-#define IRQ_MAX   256
+#define IRQ_MAX_HANDLERS 256
 #define IRQ_TIMER 0
 
 __always_inline static void local_irq_enable(void)
@@ -21,6 +21,11 @@ __always_inline static void local_irq_enable(void)
 __always_inline static void local_irq_disable(void)
 {
     arch_local_irq_disable();
+}
+
+static inline bool irqs_disabled(void)
+{
+    return arch_irqs_disabled();
 }
 
 __always_inline static void cpu_safe_halt(void)

@@ -21,6 +21,7 @@ static struct console serial_console = {
     .putchar = serial_putchar
 };
 
+// CMDLINE_SIZE is defined by the build system.
 char boot_command_line[CMDLINE_SIZE];
 char saved_command_line[CMDLINE_SIZE]; // TODO: __ro_after_init
 
@@ -36,66 +37,73 @@ extern __noreturn void kmain(void);
 
 static void verify_boot_info(void)
 {
+    // Verify the pointer.
+
+    if (unlikely(!(boot_info - KERNEL_VIRT_BASE)))
+    {
+        panic(NULL, "boot: Boot info pointer is NULL.");
+    }
+    
     // Verify the boot info structure itself.
 
     if (unlikely(memcmp(boot_info->signature, "INFO", 4) != 0))
     {
-        panic("boot: Bad boot info signature.");
+        panic(NULL, "boot: Bad boot info signature.");
     }
 
     if (unlikely(boot_info->boot_protocol_version != TPRTCL_SUPPORTED_VERSION))
     {
-        panic("boot: Unsupported Torus boot protocol version: %u", boot_info->boot_protocol_version);
+        panic(NULL, "boot: Unsupported Torus boot protocol version: %u", boot_info->boot_protocol_version);
     }
 
     // Verify the command line.
 
     if (unlikely(!boot_info->cmdline_addr))
     {
-        panic("boot: Command line pointer is NULL.");
+        panic(NULL, "boot: Command line pointer is NULL.");
     }
 
     // Verify the framebuffer.
 
     if (unlikely(!boot_info->fb_info_addr))
     {
-        panic("fb: Framebuffer info pointer is NULL.");
+        panic(NULL, "fb: Framebuffer info pointer is NULL.");
     }
 
     struct fb_info *__fb_info = vaddr(boot_info->fb_info_addr);
 
     if (unlikely(!__fb_info->phys_addr))
     {
-        panic("fb: No framebuffer.");
+        panic(NULL, "fb: No framebuffer.");
     }
 
     if (unlikely(__fb_info->bpp != 32))
     {
-        panic("fb: Unsupported framebuffer bpp: %u", __fb_info->bpp);
+        panic(NULL, "fb: Unsupported framebuffer bpp: %u", __fb_info->bpp);
     }
 
-    // Verify E820.
+    // Verify the E820 map.
 
     if (unlikely(!boot_info->e820_map_addr))
     {
-        panic("e820-memmap: E820 memory map pointer is NULL.");
+        panic(NULL, "e820-memmap: E820 memory map pointer is NULL.");
     }
 
     if (unlikely(!boot_info->e820_entry_count))
     {
-        panic("e820-memmap: No E820 memory map.");
+        panic(NULL, "e820-memmap: No E820 memory map.");
     }
 
     if (unlikely(boot_info->e820_entry_count > E820_MAX_ENTRIES))
     {
-        panic("e820-memmap: Too many E820 entries: %u", boot_info->e820_entry_count);
+        panic(NULL, "e820-memmap: Too many E820 entries: %u", boot_info->e820_entry_count);
     }
 
-    // Verify RSDP.
+    // Verify the RSDP.
 
     if (unlikely(!boot_info->rsdp_addr))
     {
-        panic("ACPI: No RSDP.");
+        panic(NULL, "ACPI: No RSDP.");
     }
 
     struct rsdp *__rsdp = vaddr(boot_info->rsdp_addr);
@@ -104,7 +112,7 @@ static void verify_boot_info(void)
 
     if (unlikely(memcmp(__rsdp->signature, "RSD PTR ", 8) != 0))
     {
-        panic("ACPI: Bad RSDP signature.");
+        panic(NULL, "ACPI: Bad RSDP signature.");
     }
 
     for (int i = 0; i < 20; i++)
@@ -114,18 +122,18 @@ static void verify_boot_info(void)
 
     if (unlikely(sum))
     {
-        panic("ACPI: Bad RSDP checksum.");
+        panic(NULL, "ACPI: Bad RSDP checksum.");
     }
 
     // We support only ACPI 1.0 for now.
     if (unlikely(__rsdp->revision != 0))
     {
-        panic("ACPI: Unsupported ACPI revision: %u", __rsdp->revision);
+        panic(NULL, "ACPI: Unsupported ACPI revision: %u", __rsdp->revision);
     }
 }
 
 // This copies only the contents of individual pointers inside boot_info.
-// For e820_map, we copy the pointer directly. copy_memmap() will handle copying it.
+// For e820_map, we copy only the pointer. copy_memmap() will handle it.
 static void copy_boot_info(void)
 {
     strncpy(boot_command_line, (char *)vaddr(boot_info->cmdline_addr), sizeof(boot_command_line) - 1);
@@ -178,6 +186,14 @@ static void copy_memmap(void)
 
 __noreturn void arch_kmain(void)
 {
+    /*
+     * At this point:
+     * - The entry stub has removed the identity mapping; we're now on the higher half.
+     * - Interrupts are disabled.
+     * - Pointers passed by the bootloader haven't been patched. vaddr() must be used.
+     */
+
+    // Initialize the console so we have output right away.
     serial_init();
     console_init(&serial_console);
 
@@ -186,23 +202,10 @@ __noreturn void arch_kmain(void)
     idt_init();
     local_irq_enable();
 
+    // Verify boot info and copy it into our space.
     verify_boot_info();
     copy_boot_info();
     copy_memmap();
-
-    /*
-     * The compiler may have used the nonvolatile registers and left
-     * stale values there. Clean it up manually because we won't return.
-     */
-    asm volatile (
-        "xorl %%ebx, %%ebx;"
-        "xorl %%r12d, %%r12d;"
-        "xorl %%r13d, %%r13d;"
-        "xorl %%r14d, %%r14d;"
-        :
-        :
-        : "rbx", "r12", "r13", "r14", "cc"
-    );
 
     kmain();
 }

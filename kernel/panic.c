@@ -5,15 +5,16 @@
 #include <kernel/panic.h>
 #include <kernel/kprintf.h>
 #include <kernel/irq.h>
+#include <lib/vsprintf.h>
 
-// Must define struct regs, context_save(), and context_dump().
+// Must define struct regs and context_dump().
 #include <asm/regs.h>
 
 #include <stdarg.h>
 
 static volatile bool panic_in_progress = false;
 
-__noreturn void vpanic(const char *fmt, va_list args)
+__noreturn __printf(2, 0) void vpanic(const struct regs *restrict regs, const char *restrict fmt, va_list args)
 {
     local_irq_disable();
 
@@ -27,15 +28,24 @@ __noreturn void vpanic(const char *fmt, va_list args)
 
     panic_in_progress = true;
 
-    struct regs regs;
-    context_store(&regs);
-   
-    pr_emerg("Kernel panic!\n");
-    pr_emerg("Message: ");
-    vkprintf(fmt, args);
-    kprintf("\n");
+    char panic_message[256];
+    vsnprintf(panic_message, sizeof(panic_message), fmt, args);
 
-    context_dump(&regs);
+    pr_emerg("                                   .::!!!!!!!:.\n");
+    pr_emerg(" .!!!!!:.                        .:!!!!!!!!!!!!\n");
+    pr_emerg(" ~~~~!!!!!!.                 .:!!!!!!!!!UWWW$$$\n");
+    pr_emerg("     :$$NWX!!:           .:!!!!!!XUWW$$$$$$$$$P\n");
+    pr_emerg("     $$$$$##WX!:      .<!!!!UW$$$$\"  $$$$$$$$#\n");
+    pr_emerg("     $$$$$  $$$UX   :!!UW$$$$$$$$$   4$$$$$*\n");
+    pr_emerg("     ^$$$B  $$$$\\     $$$$$$$$$$$$   d$$R\"\n");
+    pr_emerg("       \"*$bd$$$$      '*$$$$$$$$$$$o+#\"\n");
+    pr_emerg("            \"\"\"\"          \"\"\"\"\"\"\"\n");
+    pr_emerg("Kernel panic! Message: %s\n", panic_message);
+
+    if (regs)
+    {
+        context_dump(regs);
+    }
 
     pr_emerg("Halting execution.\n");
 
@@ -47,12 +57,12 @@ hcf:
     }
 }
 
-__noreturn void panic(const char *fmt, ...)
+__noreturn __printf(2, 3) void panic(const struct regs *restrict regs, const char *restrict fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
 
-    vpanic(fmt, args);
+    vpanic(regs, fmt, args);
 
     va_end(args);
 }

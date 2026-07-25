@@ -4,7 +4,6 @@
 #include <torus/types.h>
 #include <kernel/kprintf.h>
 #include <kernel/console.h>
-#include <kernel/panic.h>
 #include <lib/string.h>
 #include <lib/cmdline.h>
 #include <lib/vsprintf.h>

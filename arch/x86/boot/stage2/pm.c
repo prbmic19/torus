@@ -47,7 +47,10 @@ static void map_2mib(u64 pd[static 512], u64 pd_base, u64 phys_start, u64 phys_e
 
         if (unlikely(i >= 512))
         {
-            asm volatile ("hlt");
+            while (1)
+            {
+                asm volatile ("hlt");
+            }
         }
 
         pd[i] = a | PAGE_P | PAGE_RW | PAGE_PS;

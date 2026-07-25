@@ -14,6 +14,8 @@
 #define __const         __attribute__((__const__))
 #define __nonnull(...)  __attribute__((__nonnull__(__VA_ARGS__)))
 #define __printf(...)   __attribute__((__format__(__printf__, __VA_ARGS__)))
+#define __must_check    __attribute__((__warn_unused_result))
+#define __error_on_call(_msg) __attribute__((__error__(_msg)))
 
 #define fallthrough     __attribute__((__fallthrough__))
 
