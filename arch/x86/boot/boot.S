@@ -231,7 +231,7 @@ dap_stage2_1:
 dap_stage2_rest:
     .byte 0x10
     .byte 0
-    .word 0 /* Will be set. */
+    .word 0 /* Will be patched. */
     .word STAGE2_OFFSET + 512
     .word STAGE2_SEGMENT
     .quad 2
@@ -242,15 +242,15 @@ dap_kernel_1:
     .word 1
     .word KERNEL_OFFSET
     .word KERNEL_SEGMENT
-.Lklba1: .quad 0 /* Will be set. */
+.Lklba1: .quad 0 /* Will be patched. */
 
 dap_kernel_rest:
     .byte 0x10
     .byte 0
-    .word 0 /* Will be set. */
+    .word 0 /* Will be patched. */
     .word KERNEL_OFFSET + 512
     .word KERNEL_SEGMENT
-.Lklbarest: .quad 0 /* Will be set. */
+.Lklbarest: .quad 0 /* Will be patched. */
 
 .org 510
 .word 0xaa55

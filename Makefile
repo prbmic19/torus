@@ -2,13 +2,18 @@
 
 # Silence!
 MAKEFLAGS += -s --no-print-directory
+.DELETE_ON_ERROR:
 
 SUPPORTED_ARCHS := x86
 
 ifeq ($(wildcard .config),) # No .config?
 ifeq ($(filter %config,$(MAKECMDGOALS)),) # Target isn't config-related?
 ifeq ($(filter help,$(MAKECMDGOALS)),) # Target isn't help?
+ifeq ($(filter purge,$(MAKECMDGOALS)),) # Target isn't purge?
+ifeq ($(filter unmake,$(MAKECMDGOALS)),) # Target isn't unmake?
 $(error '.config' missing. Run 'make config' first)
+endif
+endif
 endif
 endif
 endif
@@ -17,8 +22,12 @@ endif
 
 ifeq ($(filter %config,$(MAKECMDGOALS)),) # Target isn't config-related?
 ifeq ($(filter help,$(MAKECMDGOALS)),) # Target isn't help?
+ifeq ($(filter purge,$(MAKECMDGOALS)),) # Target isn't purge?
+ifeq ($(filter unmake,$(MAKECMDGOALS)),) # Target isn't unmake?
 ifeq ($(filter $(ARCH),$(SUPPORTED_ARCHS)),) # Arch isn't supported?
 $(error Architecture '$(ARCH)' is unsupported)
+endif
+endif
 endif
 endif
 endif
@@ -91,6 +100,10 @@ endif
 
 ifeq ($(ARCH_CFLAGS_BOOT),)
 $(error 'ARCH_CFLAGS_BOOT' undefined)
+endif
+
+ifeq ($(ARCH_CFLAGS_KERNEL_NO_INC),)
+$(error 'ARCH_CFLAGS_KERNEL_NO_INC' undefined)
 endif
 
 ifeq ($(ARCH_CFLAGS_KERNEL),)

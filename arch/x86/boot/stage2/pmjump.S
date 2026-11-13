@@ -4,7 +4,7 @@
 
 .intel_syntax noprefix
 
-.section .text.real, "ax", @progbits
+.section .text, "ax", @progbits
 
 .code16
 
@@ -19,8 +19,6 @@ FUNC_BEGIN(enter_protected_mode)
 
     jmp    0x18, pm_entry
 FUNC_END(enter_protected_mode)
-
-.section .text, "ax", @progbits
 
 .code32
 

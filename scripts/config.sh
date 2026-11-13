@@ -113,6 +113,9 @@ config_prompt() {
             ;;
         *)
             prompt_str="$prompt_str [$current]: "
+            if [[ "$var" == "CMDLINE" ]]; then
+                echo "Input '--' to clear."
+            fi
             ;;
     esac
 
@@ -139,7 +142,7 @@ config_prompt() {
             break
         fi
 
-        echo "  Invalid input. Please try again."
+        echo "Invalid input. Please try again."
         echo ""
     done
 }

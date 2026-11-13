@@ -4,6 +4,7 @@
 #include <torus/compiler.h>
 #include <drivers/fb.h>
 #include <asm/boot_info.h>
+#include <asm/irq.h>
 
 #define KERNEL_SRC  ((void *)0x10000)
 
@@ -12,7 +13,6 @@
 #define PAGE_PS ((u64)1 << 7)
 
 #define MIB(_n) ((u64)(_n) << 20)
-#define GIB(_n) ((u64)(_n) << 30)
 
 extern struct boot_info *boot_info_ptr;
 
@@ -49,7 +49,7 @@ static void map_2mib(u64 pd[static 512], u64 pd_base, u64 phys_start, u64 phys_e
         {
             while (1)
             {
-                asm volatile ("hlt");
+                arch_cpu_halt();
             }
         }
 
@@ -64,6 +64,7 @@ static void build_page_tables(void)
     pdpt[0] = (u64)(unsigned long)pd_first_gib | PAGE_P | PAGE_RW;
 
     // Identity map framebuffer region.
+    // Whether we have one, it's up to the kernel to care about it.
 
     struct fb_info *__fb_info = (struct fb_info *)(unsigned long)boot_info_ptr->fb_info_addr;
 
@@ -88,7 +89,7 @@ static void relocate_kernel(void)
     void *kernel_reloc_dest = NULL;
     size_t kernel_size = *(u32 *)(KERNEL_SRC + 6);
 
-    for (int i = 0; i < (int)boot_info_ptr->e820_entry_count; i++)
+    for (unsigned int i = 0; i < boot_info_ptr->e820_entry_count; i++)
     {
         struct e820_entry *entry = &((struct e820_entry *)(unsigned long)boot_info_ptr->e820_map_addr)[i];
         
@@ -105,7 +106,7 @@ static void relocate_kernel(void)
         // At this point, we have no way of reporting an error besides halting.
         while (1)
         {
-            asm volatile ("hlt");
+            arch_cpu_halt();
         }
     }
 

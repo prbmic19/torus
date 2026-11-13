@@ -117,7 +117,7 @@ FUNC_BEGIN(stage2_entry)
 
     call   get_boot_info
 
-    /* Store the pointer to our boot_info strucuture. */
+    /* Store the pointer to our boot_info structure. */
     xor    edi, edi
     lea    di, [boot_info]
     mov    [boot_info_ptr], edi

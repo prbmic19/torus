@@ -120,7 +120,7 @@ static void verify_boot_info(void)
         sum += raw___rsdp[i];
     }
 
-    if (unlikely(sum))
+    if (unlikely(sum != 0))
     {
         panic(NULL, "ACPI: Bad RSDP checksum.");
     }
@@ -143,7 +143,8 @@ static void copy_boot_info(void)
     saved_command_line[sizeof(saved_command_line) - 1] = '\0';
 
     memcpy(&fb_info, vaddr(boot_info->fb_info_addr), sizeof(fb_info));
-    fb_info.virt_addr = (unsigned long)vaddr(fb_info.phys_addr);
+    // This doesn't work.
+    // fb_info.virt_addr = (unsigned long)vaddr(fb_info.phys_addr);
 
     memcpy(&rsdp, vaddr(boot_info->rsdp_addr), sizeof(rsdp));
 

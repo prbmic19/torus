@@ -3,12 +3,16 @@
 #include <drivers/serial.h>
 #include <torus/types.h>
 #include <asm/io.h>
+#include <asm/misc_wrappers.h>
 
 static const u16 serial_port = 0x3f8;
 
-static bool serial_ready(void)
+static void serial_wait(void)
 {
-    return inb(serial_port + 5) & 0x20;
+    while (!(inb(serial_port + 5) & 0x20))
+    {
+        pause();
+    }
 }
 
 void serial_init(void)
@@ -24,10 +28,6 @@ void serial_init(void)
 
 void serial_putchar(int ch)
 {
-    while (!serial_ready())
-    {
-        asm volatile ("pause");
-    }
-
+    serial_wait();
     outb(serial_port, (unsigned char)ch);
 }
